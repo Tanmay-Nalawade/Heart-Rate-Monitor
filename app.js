@@ -1,9 +1,7 @@
 const express = require("express");
 const path = require("path");
-
 const app = express();
-
-const user = require("./models/user");
+const User = require("./models/Users");
 
 // Telling express to use ejs as the templating engine
 app.set("view engine", "ejs");
@@ -18,6 +16,10 @@ app.get("/", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login");
+});
+
+app.get("/user", (req, res) => {
+  res.render("user");
 });
 
 app.listen(8080, () => {
