@@ -22,11 +22,12 @@ canvas {
 
 #slogan {
   position: absolute;
-  bottom: 70px; /* adjust top or bottom as you like */
+  bottom: 150px; /* adjust top or bottom as you like */
   width: 100%;
   text-align: center;
-  font-family: "Momo Signature", cursive;
-  font-weight: 700;
+  font-family: "Momo Trust Display", sans-serif;
+  font-weight: 400;
+  font-style: normal;
   font-size: 2.5rem;
   color: rgba(255, 0, 0, 5); /* heart-like pink-red */
 
@@ -35,4 +36,5 @@ canvas {
     0 0 30px #ff4c6d, 0 0 40px #ff4c6d, 0 0 50px #ff4c6d; */
 
   pointer-events: none; /* text won't interfere with canvas interaction */
+  transition: transform 0.2s ease-in-out;
 }
