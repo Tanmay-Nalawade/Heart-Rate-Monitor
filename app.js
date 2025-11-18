@@ -24,7 +24,7 @@ app.get("/test-physician", async (req, res) => {
       lastName: "User",
       email: "test@example.com",
       password: "12345",
-      patients: [] // empty for now
+      patients: [], // empty for now
     });
 
     await physician.save();
@@ -33,6 +33,7 @@ app.get("/test-physician", async (req, res) => {
     console.error(err);
     res.status(500).send("Error saving physician");
   }
+});
 app.get("/index", (req, res) => {
   res.render("index");
 });
