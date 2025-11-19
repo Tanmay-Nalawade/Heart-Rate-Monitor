@@ -20,9 +20,7 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', async function (next) {
-  // `this` is the document being saved
-  if (!this.isModified('password')) return next(); // only hash if changed
-
+  if (!this.isModified('password')) return next();
   try {
     const hashed = await bcrypt.hash(this.password, SALT_ROUNDS);
     this.password = hashed;
@@ -31,5 +29,9 @@ userSchema.pre('save', async function (next) {
     next(err);
   }
 });
+
+userSchema.methods.comparePassword = function (candidate) {
+  return bcrypt.compare(candidate, this.password);
+};
 
 module.exports = mongoose.model("User", userSchema);
