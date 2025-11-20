@@ -1,16 +1,103 @@
-<h1>Create User</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Heart Rate Monitor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .register-container {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 1.5rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      color: #555;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      margin-top: 1rem;
+    }
+    label:first-of-type {
+      margin-top: 0;
+    }
+    input {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    .links {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+    .links a {
+      color: #667eea;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <h1>Create Account</h1>
+    <form action="/register" method="POST">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required>
 
-<form action="/register" method="POST">
-  <label>Username:</label>
-  <input type="text" name="username" required>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
 
-  <label>Email:</label>
-  <input type="email" name="email" required>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
 
-  <label>Password:</label>
-  <input type="password" name="password" required>
-
-  <button type="submit">Create User</button>
-</form>
-
-<a href="/users">View all users</a>
+      <button type="submit">Create Account</button>
+    </form>
+    <div class="links">
+      <a href="/login">Already have an account? Login</a>
+    </div>
+  </div>
+</body>
+</html>
