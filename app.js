@@ -5,6 +5,9 @@ const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
+// Routes
+const userRoutes = require("./routes/users");
+
 require("./db"); // To run mongoose.connect() code from db.js
 
 const Physician = require("./models/physician");
@@ -42,8 +45,16 @@ passport.serializeUser(User.serializeUser());
 // How to get user out of the session
 passport.deserializeUser(User.deserializeUser());
 
+app.use("/", userRoutes);
+
 app.get("/", (req, res) => {
   res.render("home");
+});
+
+app.get("/fake-user", async (req, res) => {
+  const user = new User({ email: "test@gmail.com" });
+  const newUser = await User.register(user, "password123");
+  res.send(newUser);
 });
 
 app.get("/test-physician", async (req, res) => {
