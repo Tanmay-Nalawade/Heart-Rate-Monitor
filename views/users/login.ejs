@@ -48,20 +48,20 @@
 
       <div class="form-box Register">
         <h2 class="animation" style="--li: 17; --S: 0">Register</h2>
-        <form action="#">
+        <form action="/register" method="post">
           <div class="input-box animation" style="--li: 19; --S: 2">
-            <input type="email" required />
-            <label for="">Email</label>
+            <input type="email" name="email" required />
+            <label for="email">Email</label>
             <box-icon name="envelope" type="solid"></box-icon>
           </div>
 
           <div class="input-box animation" style="--li: 19; --S: 3">
-            <input type="password" required />
-            <label for="">Password</label>
+            <input type="password" name="password" required />
+            <label for="password">Password</label>
             <box-icon name="lock-alt" type="solid"></box-icon>
           </div>
           <div class="input-box animation" style="--li: 18; --S: 1">
-            <input type="text" required />
+            <input type="text" name="deviceId" required />
             <label for="">Enter a Device Id</label>
             <box-icon type="solid" name="user"></box-icon>
           </div>
@@ -72,7 +72,7 @@
 
           <div class="regi-link animation" style="--li: 21; --S: 5">
             <p>
-              Don't have an account? <br />
+              Already have an account? <br />
               <a href="#" class="SignInLink">Sign In</a>
             </p>
           </div>

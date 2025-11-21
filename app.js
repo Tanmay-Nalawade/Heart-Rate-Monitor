@@ -19,6 +19,9 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static("public"));
 
+// For express to parse from req data
+app.use(express.urlencoded({ extended: true }));
+
 // The session
 const sessionConfig = {
   secret: "thisshouldbeabettersecret!",
@@ -75,39 +78,8 @@ app.get("/test-physician", async (req, res) => {
   }
 });
 
-app.post("/register", async (req, res) => {
-  try {
-    const { firstName, lastName, email, password } = req.body;
-
-    // Basic validation
-    if (!firstName || !email || !password) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    // Check if user already exists
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(409).json({ error: "Email already in use" });
-    }
-
-    // Create user
-    const newUser = await User.create({
-      firstName,
-      lastName,
-      email,
-      password,
-    });
-
-    await newUser.save();
-
-    res.status(201).json({
-      message: "User created successfully",
-      user: newUser,
-    });
-  } catch (error) {
-    console.error("Error creating user:", error);
-    res.status(500).json({ error: "Server error" });
-  }
+app.get("/dashboard", (req, res) => {
+  res.render("dashboard");
 });
 
 app.get("/index", (req, res) => {
