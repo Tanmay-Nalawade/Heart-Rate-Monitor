@@ -68,12 +68,6 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 
-app.get("/fake-user", async (req, res) => {
-  const user = new User({ email: "test@gmail.com" });
-  const newUser = await User.register(user, "password123");
-  res.send(newUser);
-});
-
 app.get("/test-physician", async (req, res) => {
   try {
     const physician = new Physician({
