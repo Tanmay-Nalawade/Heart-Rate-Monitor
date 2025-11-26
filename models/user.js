@@ -11,8 +11,8 @@ const UserSchema = new Schema({
   },
   devices: [
     {
-      type: Schema.Types.ObjectId,
-      ref: "Device",
+      name: { type: String, required: true },
+      serial: { type: String, required: true },
     },
   ],
 });
