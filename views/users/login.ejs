@@ -15,14 +15,24 @@
         <form action="/login" method="post">
           <div class="input-box animation" style="--D: 1; --S: 22">
             <input type="text" name="email" required />
-            <label for="">Email</label>
-            <box-icon type="solid" name="user"></box-icon>
+            <label for="email">Email</label>
+            <box-icon name="envelope" type="solid"></box-icon>
           </div>
 
           <div class="input-box animation" style="--D: 2; --S: 23">
             <input type="password" name="password" required />
-            <label for="">Password</label>
+            <label for="password">Password</label>
             <box-icon name="lock-alt" type="solid"></box-icon>
+          </div>
+
+          <div class="input-box animation" style="--D: 2; --S: 23">
+            <select name="role" required>
+              <option value="" disabled selected></option>
+              <option value="user">Patient</option>
+              <option value="physician">Physician</option>
+            </select>
+            <label for="role">Log In As</label>
+            <box-icon name="group" type="solid"></box-icon>
           </div>
 
           <div class="input-box animation" style="--D: 3; --S: 24">
@@ -60,10 +70,35 @@
             <label for="password">Password</label>
             <box-icon name="lock-alt" type="solid"></box-icon>
           </div>
-          <div class="input-box animation" style="--li: 18; --S: 1">
-            <input type="text" name="deviceId" required />
-            <label for="">Enter a Device Id</label>
-            <box-icon type="solid" name="user"></box-icon>
+
+          <div class="input-box animation" style="--li: 19; --S: 3">
+            <select name="role" id="registerRole" required>
+              <option value="" disabled selected></option>
+              <option value="patient">Patient</option>
+              <option value="physician">Physician</option>
+            </select>
+            <label for="role">Log In As</label>
+            <box-icon name="group" type="solid"></box-icon>
+          </div>
+
+          <div
+            class="input-box animation physician-field"
+            id="licenseIdBox"
+            style="--li: 22; --S: 5; display: none"
+          >
+            <input type="text" name="licenseId" />
+            <label for="licenseId">Medical License ID</label>
+            <box-icon name="medal" type="solid"></box-icon>
+          </div>
+
+          <div
+            class="input-box animation user-field"
+            id="deviceIdBox"
+            style="--li: 22; --S: 5; display: none"
+          >
+            <input type="text" name="deviceId" />
+            <label for="deviceId">Device ID</label>
+            <box-icon name="devices" type="solid"></box-icon>
           </div>
 
           <div class="input-box animation" style="--li: 20; --S: 4">

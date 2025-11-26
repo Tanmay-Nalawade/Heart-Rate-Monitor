@@ -25,4 +25,4 @@ PhysicianSchema.plugin(passportLocalMongoose, {
   },
 });
 
-module.exports = mongoose.model("Physician", physicianSchema);
+module.exports = mongoose.model("Physician", PhysicianSchema);
