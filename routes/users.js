@@ -24,7 +24,11 @@ const authenticateUserOrPhysician = (req, res, next) => {
 };
 
 router.get("/login", (req, res) => {
-  res.render("users/login");
+  res.render("users/login", {
+    page_css: "login.css", // Pass the name of the stylesheet file
+    page_script: "login.js",
+    title: "Login/Register",
+  });
 });
 
 router.post("/register", async (req, res) => {
