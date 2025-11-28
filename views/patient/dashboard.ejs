@@ -3,6 +3,6 @@
 
 <ul>
   <% for (let device of patient_devices){%>
-  <li><a href="/devices/<%= device._id %>"><%= device.name %></a></li>
+  <li><a href="/patient/device/<%= device._id %>"><%= device.name %></a></li>
   <% }%>
 </ul>

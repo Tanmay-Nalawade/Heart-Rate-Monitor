@@ -85,8 +85,18 @@ app.get("/", (req, res) => {
 
 app.get("/patient/dashboard", async (req, res) => {
   const patient_devices = await Device.find({});
-  res.render("dashboard", {
+  res.render("patient/dashboard", {
     patient_devices,
+    page_css: null,
+    page_script: null,
+    title: "About Us",
+  });
+});
+
+app.get("/patient/device/:id", async (req, res) => {
+  const device = await Device.findById(req.params.id);
+  res.render("patient/show_device", {
+    device,
     page_css: null,
     page_script: null,
     title: "About Us",
