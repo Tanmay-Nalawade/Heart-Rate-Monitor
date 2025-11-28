@@ -134,6 +134,12 @@ app.put("/device/:id", async (req, res) => {
   res.redirect(`/device/${device._id}`);
 });
 
+app.delete("/device/:id", async (req, res) => {
+  const { id } = req.params;
+  await Device.findByIdAndDelete(id);
+  res.redirect("/dashboard");
+});
+
 app.get("/about", (req, res) => {
   res.render("about", {
     page_css: "about.css", // Pass the name of the stylesheet file
