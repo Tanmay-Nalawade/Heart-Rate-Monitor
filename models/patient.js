@@ -11,8 +11,8 @@ const PatientSchema = new Schema({
   },
   devices: [
     {
-      name: { type: String, required: true },
-      serial: { type: String, required: true },
+      type: Schema.Types.ObjectId,
+      ref: "Device",
     },
   ],
 });
