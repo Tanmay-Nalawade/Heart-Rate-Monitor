@@ -10,7 +10,6 @@ const userRoutes = require("./routes/users");
 
 require("./db"); // To run mongoose.connect() code from db.js
 
-const Physician = require("./models/physician");
 const User = require("./models/user");
 
 // Telling express to use ejs as the templating engine
@@ -69,23 +68,6 @@ app.get("/fake-user", async (req, res) => {
   res.send(newUser);
 });
 
-app.get("/test-physician", async (req, res) => {
-  try {
-    const physician = new Physician({
-      firstName: "Test",
-      lastName: "User",
-      email: "test@example.com",
-      password: "12345",
-      patients: [], // empty for now
-    });
-
-    await physician.save();
-    res.send("Physician saved!");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error saving physician");
-  }
-});
 
 app.get("/dashboard", (req, res) => {
   res.render("dashboard");
