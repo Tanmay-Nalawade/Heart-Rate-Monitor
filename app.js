@@ -26,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const Physician = require("./models/physician");
 const Patient = require("./models/patient");
+const Device = require("./models/device");
 
 // The session
 const sessionConfig = {
@@ -82,26 +83,14 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/test-physician", async (req, res) => {
-  try {
-    const physician = new Physician({
-      firstName: "Test",
-      lastName: "User",
-      email: "test@example.com",
-      password: "12345",
-      patients: [], // empty for now
-    });
-
-    await physician.save();
-    res.send("Physician saved!");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error saving physician");
-  }
-});
-
-app.get("/dashboard", (req, res) => {
-  res.render("dashboard");
+app.get("/patient/dashboard", async (req, res) => {
+  const patient_devices = await Device.find({});
+  res.render("dashboard", {
+    patient_devices,
+    page_css: null,
+    page_script: null,
+    title: "About Us",
+  });
 });
 
 app.get("/about", (req, res) => {
