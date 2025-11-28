@@ -83,7 +83,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/patient/dashboard", async (req, res) => {
+app.get("/dashboard", async (req, res) => {
   const patient_devices = await Device.find({});
   res.render("patient/dashboard", {
     patient_devices,
@@ -93,7 +93,23 @@ app.get("/patient/dashboard", async (req, res) => {
   });
 });
 
-app.get("/patient/device/:id", async (req, res) => {
+app.get("/device/new", async (req, res) => {
+  const device = await Device.findById(req.params.id);
+  res.render("patient/new_device", {
+    device,
+    page_css: null,
+    page_script: null,
+    title: "About Us",
+  });
+});
+
+app.post("/dashboard", async (req, res) => {
+  const device = new Device(req.body.device);
+  await device.save();
+  res.redirect(`/device/${device._id}`);
+});
+
+app.get("/device/:id", async (req, res) => {
   const device = await Device.findById(req.params.id);
   res.render("patient/show_device", {
     device,
