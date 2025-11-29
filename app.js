@@ -78,6 +78,11 @@ passport.serializeUser(Patient.serializeUser());
 // How to get user out of the session
 passport.deserializeUser(Patient.deserializeUser());
 
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  next();
+});
+
 app.use("/", userRoutes);
 app.use("/patient", patientRoutes);
 

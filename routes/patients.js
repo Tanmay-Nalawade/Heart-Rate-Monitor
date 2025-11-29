@@ -4,7 +4,7 @@ const Device = require("../models/device");
 const { isLoggedIn } = require("../middleware");
 
 // Show all the devices
-router.get("/dashboard", async (req, res) => {
+router.get("/dashboard", isLoggedIn, async (req, res) => {
   const patient_devices = await Device.find({});
   res.render("patient/dashboard", {
     patient_devices,
@@ -25,7 +25,7 @@ router.get("/device/new", isLoggedIn, async (req, res) => {
   });
 });
 
-router.post("/dashboard", async (req, res) => {
+router.post("/dashboard", isLoggedIn, async (req, res) => {
   const device = new Device(req.body.device);
   await device.save();
   req.flash("success", "A new Device was added Successfully");
