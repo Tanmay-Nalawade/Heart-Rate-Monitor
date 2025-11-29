@@ -10,6 +10,7 @@ const app = express();
 
 // Routes
 const userRoutes = require("./routes/users");
+const patientRoutes = require("./routes/patients");
 
 // To run mongoose.connect() code from db.js
 require("./db");
@@ -76,6 +77,7 @@ passport.serializeUser(Patient.serializeUser());
 passport.deserializeUser(Patient.deserializeUser());
 
 app.use("/", userRoutes);
+app.use("/patient", patientRoutes);
 
 app.get("/", (req, res) => {
   res.render("home", {
@@ -83,61 +85,6 @@ app.get("/", (req, res) => {
     page_script: "home.js",
     title: "Core-Beat Home",
   });
-});
-
-app.get("/dashboard", async (req, res) => {
-  const patient_devices = await Device.find({});
-  res.render("patient/dashboard", {
-    patient_devices,
-    page_css: null,
-    page_script: null,
-    title: "About Us",
-  });
-});
-
-app.get("/device/new", async (req, res) => {
-  const device = await Device.findById(req.params.id);
-  res.render("patient/new_device", {
-    device,
-    page_css: null,
-    page_script: null,
-    title: "About Us",
-  });
-});
-
-app.post("/dashboard", async (req, res) => {
-  const device = new Device(req.body.device);
-  await device.save();
-  res.redirect(`/device/${device._id}`);
-});
-
-app.get("/device/:id/edit", async (req, res) => {
-  const device = await Device.findById(req.params.id);
-  res.render("patient/edit", { device });
-});
-
-app.get("/device/:id", async (req, res) => {
-  const device = await Device.findById(req.params.id);
-  res.render("patient/show_device", {
-    device,
-    page_css: null,
-    page_script: null,
-    title: "About Us",
-  });
-});
-
-app.put("/device/:id", async (req, res) => {
-  const { id } = req.params;
-  const device = await Device.findByIdAndUpdate(id, {
-    ...req.body.device,
-  });
-  res.redirect(`/device/${device._id}`);
-});
-
-app.delete("/device/:id", async (req, res) => {
-  const { id } = req.params;
-  await Device.findByIdAndDelete(id);
-  res.redirect("/dashboard");
 });
 
 app.get("/about", (req, res) => {

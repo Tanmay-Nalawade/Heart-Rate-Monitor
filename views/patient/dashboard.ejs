@@ -1,9 +1,11 @@
 <% layout('layouts/boilerplate')%>
 <h1>this is the dashboard</h1>
 
-<a href="/device/new" style="color: black; font-weight: bold">Add a device</a>
+<a href="/patient/device/new" style="color: black; font-weight: bold"
+  >Add a device</a
+>
 <ul>
   <% for (let device of patient_devices){%>
-  <li><a href="/device/<%= device._id %>"><%= device.name %></a></li>
+  <li><a href="/patient/device/<%= device._id %>"><%= device.name %></a></li>
   <% }%>
 </ul>

@@ -8,7 +8,7 @@
 
   <body>
     <h1>Edit Devide Info</h1>
-    <form action="/device/<%=device._id%>?_method=PUT" method="POST">
+    <form action="/patient/device/<%=device._id%>?_method=PUT" method="POST">
       <div>
         <label for="name">Name</label>
         <input
@@ -28,7 +28,7 @@
         />
       </div>
       <button>Update Campground</button>
-      <a href="/dashboard">Back to dashboard</a>
+      <a href="/patient/dashboard">Back to dashboard</a>
     </form>
   </body>
 </html>
