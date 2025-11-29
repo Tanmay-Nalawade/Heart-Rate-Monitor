@@ -5,6 +5,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const ejsMate = require("ejs-mate");
 const methodOverried = require("method-override");
+const flash = require("connect-flash");
 
 const app = express();
 
@@ -45,6 +46,7 @@ const sessionConfig = {
 
 // This should be befoer passport session initialisation
 app.use(session(sessionConfig));
+app.use(flash());
 
 // Pasport Middlewares
 app.use(passport.initialize());

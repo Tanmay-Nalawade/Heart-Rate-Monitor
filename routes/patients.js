@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const Device = require("../models/device");
+const { isLoggedIn } = require("../middleware");
 
+// Show all the devices
 router.get("/dashboard", async (req, res) => {
   const patient_devices = await Device.find({});
   res.render("patient/dashboard", {
@@ -12,7 +14,8 @@ router.get("/dashboard", async (req, res) => {
   });
 });
 
-router.get("/device/new", async (req, res) => {
+// Creating/Adding a new device
+router.get("/device/new", isLoggedIn, async (req, res) => {
   const device = await Device.findById(req.params.id);
   res.render("patient/new_device", {
     device,
@@ -25,14 +28,15 @@ router.get("/device/new", async (req, res) => {
 router.post("/dashboard", async (req, res) => {
   const device = new Device(req.body.device);
   await device.save();
+  req.flash("success", "A new Device was added Successfully");
   res.redirect(`/patient/device/${device._id}`);
 });
 
+// Edit/Update the info present on device
 router.get("/device/:id/edit", async (req, res) => {
   const device = await Device.findById(req.params.id);
   res.render("patient/edit", { device });
 });
-
 router.get("/device/:id", async (req, res) => {
   const device = await Device.findById(req.params.id);
   res.render("patient/show_device", {
@@ -42,7 +46,6 @@ router.get("/device/:id", async (req, res) => {
     title: "About Us",
   });
 });
-
 router.put("/device/:id", async (req, res) => {
   const { id } = req.params;
   const device = await Device.findByIdAndUpdate(id, {
@@ -51,6 +54,7 @@ router.put("/device/:id", async (req, res) => {
   res.redirect(`/patient/device/${device._id}`);
 });
 
+// Delete a particular device
 router.delete("/device/:id", async (req, res) => {
   const { id } = req.params;
   await Device.findByIdAndDelete(id);
