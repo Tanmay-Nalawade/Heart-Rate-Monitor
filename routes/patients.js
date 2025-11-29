@@ -27,8 +27,12 @@ router.get("/device/new", isLoggedIn, async (req, res) => {
 });
 
 router.post("/dashboard", isLoggedIn, async (req, res) => {
+  // Saving the new device
   const device = new Device(req.body.device);
   await device.save();
+  // link new device iD to the logged-in patient
+  req.user.devices.push(device._id);
+  await req.user.save();
   req.flash("success", "A new Device was added Successfully");
   res.redirect(`/patient/device/${device._id}`);
 });
@@ -59,6 +63,7 @@ router.put("/device/:id", async (req, res) => {
 router.delete("/device/:id", async (req, res) => {
   const { id } = req.params;
   await Device.findByIdAndDelete(id);
+  await req.user.updateOne({ $pull: { devices: id } });
   res.redirect("/patient/dashboard");
 });
 
