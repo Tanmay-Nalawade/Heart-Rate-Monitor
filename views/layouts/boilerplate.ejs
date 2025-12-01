@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- CSS files global-->
+    <link rel="stylesheet" href="/stylesheets/navbar.css" />
+    <link rel="stylesheet" href="/stylesheets/flash.css" />
+    <!-- CSS file specific-->
+    <% if (page_css) { %>
+    <link rel="stylesheet" href="/stylesheets/<%= page_css %>" />
+    <% } %>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Momo+Signature&family=Momo+Trust+Display&display=swap"
+      rel="stylesheet"
+    />
+    <title>boilerplate</title>
+  </head>
+  <body style="margin: 0">
+    <%- include('../partials/navbar') %> <%- include('../partials/flash')%>
+    <!-- The page content -->
+    <%- body %>
+
+    <!-- Js global -->
+    <script src="/javascripts/navbar.js"></script>
+    <script src="/javascripts/flash.js"></script>
+    <!-- File specific JS -->
+    <% if (page_script) { %>
+    <script src="/javascripts/<%= page_script %>"></script>
+    <% } %>
+  </body>
+</html>

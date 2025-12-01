@@ -7,19 +7,18 @@
   font-family: "Poppins", sans-serif;
   color: #fff;
 }
-
-body {
+.wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #25252b;
+  background: #302d2d;
 }
 
 .container {
   position: relative;
   width: 750px;
-  height: 450px;
+  height: 60vh;
   border: 2px solid #ff2770;
   box-shadow: 0 0 25px #ff2770;
   overflow: hidden;
@@ -86,14 +85,17 @@ body {
   margin-top: 25px;
 }
 
-.input-box input {
+.input-box input,
+.input-box select {
   width: 100%;
   height: 100%;
   background: transparent;
   border: none;
   outline: none;
+  appearance: none;
   font-size: 16px;
   color: #fff;
+  cursor: pointer;
   font-weight: 600;
   border-bottom: 2px solid #fff;
   padding-right: 23px;
@@ -117,6 +119,13 @@ body {
 
 .input-box input:focus ~ label,
 .input-box input:valid ~ label {
+  top: -5px;
+  color: #ff2770;
+}
+
+/* FIX: Explicitly set color for the select box content */
+.input-box select:focus ~ label,
+.input-box select:valid ~ label {
   top: -5px;
   color: #ff2770;
 }
