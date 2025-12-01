@@ -15,11 +15,13 @@ const authenticateUserOrPhysician = (req, res, next) => {
   if (role === "physician") {
     // Authenticate against the Physician model using the physician-specific strategy
     passport.authenticate("physician-local", {
+      failureFlash: true,
       failureRedirect: "/login",
     })(req, res, next);
   } else {
     // Default to patient (role === 'patient') or any other role, using the patient-specific strategy
     passport.authenticate("patient-local", {
+      failureFlash: true,
       failureRedirect: "/login",
     })(req, res, next);
   }
@@ -34,38 +36,43 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/register", async (req, res) => {
-  const { email, password, role, serialNumber, licenseId } = req.body;
+  try {
+    const { email, password, role, serialNumber, licenseId } = req.body;
 
-  // User object to upload
-  let userDetails = { email };
-  // To hold either patient or physician model
-  let RegisterModel;
-  // For redirection
-  let registeredRole;
+    // User object to upload
+    let userDetails = { email };
+    // To hold either patient or physician model
+    let RegisterModel;
+    // For redirection
+    let registeredRole;
 
-  if (role === "patient") {
-    // for patient use deviceId
-    const newDevice = new Device({
-      serial_number: serialNumber,
+    if (role === "patient") {
+      // for patient use deviceId
+      const newDevice = new Device({
+        serial_number: serialNumber,
+      });
+      await newDevice.save();
+      deviceIdToLink = newDevice._id;
+      userDetails.devices = [deviceIdToLink];
+      RegisterModel = User;
+      registeredRole = "patient";
+    } else if (role === "physician") {
+      // for Physician, use licenseId
+      userDetails.licenseId = licenseId;
+      RegisterModel = Physician;
+      registeredRole = "physician";
+    }
+    const user = new RegisterModel(userDetails);
+    const registered_patient = await RegisterModel.register(user, password);
+    req.login(registered_patient, (err) => {
+      if (err) return next(err);
+      req.flash("success", "Welcome to Yelp Camp!");
+      res.redirect("/patient/dashboard");
     });
-    await newDevice.save();
-    deviceIdToLink = newDevice._id;
-    userDetails.devices = [deviceIdToLink];
-    RegisterModel = User;
-    registeredRole = "patient";
-  } else if (role === "physician") {
-    // for Physician, use licenseId
-    userDetails.licenseId = licenseId;
-    RegisterModel = Physician;
-    registeredRole = "physician";
+  } catch (e) {
+    req.flash("error", e.message);
+    res.redirect("/login");
   }
-  const user = new RegisterModel(userDetails);
-  const registered_patient = await RegisterModel.register(user, password);
-  req.login(registered_patient, (err) => {
-    if (err) return next(err);
-    req.flash("success", "Welcome to Yelp Camp!");
-    res.redirect("/patient/dashboard");
-  });
 });
 
 router.post(
