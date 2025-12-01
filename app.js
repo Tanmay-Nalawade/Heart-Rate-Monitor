@@ -28,8 +28,8 @@ app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverried("_method"));
 
-const Physician = require("./models/physician");
 const Patient = require("./models/patient");
+const Physician = require("./models/physician");
 
 // The session
 const sessionConfig = {
