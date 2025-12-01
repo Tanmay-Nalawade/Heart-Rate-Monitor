@@ -31,7 +31,6 @@ app.use(methodOverried("_method"));
 
 const Physician = require("./models/physician");
 const Patient = require("./models/patient");
-const Device = require("./models/device");
 
 // The session
 const sessionConfig = {
@@ -81,6 +80,8 @@ passport.deserializeUser(Patient.deserializeUser());
 
 app.use((req, res, next) => {
   res.locals.currentUser = req.user;
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
   next();
 });
 

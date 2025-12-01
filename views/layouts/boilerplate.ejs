@@ -6,6 +6,7 @@
 
     <!-- CSS files global-->
     <link rel="stylesheet" href="/stylesheets/navbar.css" />
+    <link rel="stylesheet" href="/stylesheets/flash.css" />
     <!-- CSS file specific-->
     <% if (page_css) { %>
     <link rel="stylesheet" href="/stylesheets/<%= page_css %>" />
@@ -21,13 +22,13 @@
     <title>boilerplate</title>
   </head>
   <body style="margin: 0">
-    <%- include('../partials/navbar') %>
-
+    <%- include('../partials/navbar') %> <%- include('../partials/flash')%>
     <!-- The page content -->
     <%- body %>
 
     <!-- Js global -->
     <script src="/javascripts/navbar.js"></script>
+    <script src="/javascripts/flash.js"></script>
     <!-- File specific JS -->
     <% if (page_script) { %>
     <script src="/javascripts/<%= page_script %>"></script>
