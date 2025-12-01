@@ -14,8 +14,9 @@ const app = express();
 const userRoutes = require("./routes/users");
 const patientRoutes = require("./routes/patients");
 
-// To run mongoose.connect() code from db.js
-require("./db");
+require("./db"); // To run mongoose.connect() code from db.js
+
+const User = require("./models/user");
 
 // Set the engine to use ejs-mate instead of the normal engine that is used to parse ejs
 app.engine("ejs", ejsMate);
