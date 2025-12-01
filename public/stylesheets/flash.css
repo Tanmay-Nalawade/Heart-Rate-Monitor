@@ -30,3 +30,12 @@
   border-color: #ff2770;
   color: #ff2770;
 }
+
+.danger-alert {
+  background-color: #f7a7a3;
+  border-left: 5px solid #8e2b26; /* #f7a7a3 darkened by 50% */
+}
+.danger-alert .close {
+  border-color: #8e2b26;
+  color: #8e2b26;
+}

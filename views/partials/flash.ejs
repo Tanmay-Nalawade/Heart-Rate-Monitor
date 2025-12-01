@@ -3,4 +3,9 @@
   <h3><%= success %></h3>
   <a class="close">&times;</a>
 </div>
+<% } %> <% if(error && error.length) {%>
+<div class="alert danger-alert">
+  <h3><%= error %></h3>
+  <a class="close">&times;</a>
+</div>
 <% } %>

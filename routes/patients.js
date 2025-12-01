@@ -54,6 +54,10 @@ router.get(
   isDeviceOwner,
   catchAsync(async (req, res) => {
     const device = await Device.findById(req.params.id);
+    if (!device) {
+      req.flash("error", "Cannot find that Device!");
+      return res.redirect("/patient/dashboard");
+    }
     res.render("patient/edit", { device });
   })
 );
@@ -61,6 +65,10 @@ router.get(
   "/device/:id",
   catchAsync(async (req, res) => {
     const device = await Device.findById(req.params.id);
+    if (!device) {
+      req.flash("error", "Cannot find that Device!");
+      return res.redirect("/patient/dashboard");
+    }
     res.render("patient/show_device", {
       device,
       page_css: null,
@@ -79,6 +87,7 @@ router.put(
     const device = await Device.findByIdAndUpdate(id, {
       ...req.body.device,
     });
+    req.flash("success", "Successfully Updated device Info");
     res.redirect(`/patient/device/${device._id}`);
   })
 );
@@ -92,6 +101,7 @@ router.delete(
     const { id } = req.params;
     await Device.findByIdAndDelete(id);
     await req.user.updateOne({ $pull: { devices: id } });
+    req.flash("success", "Successfully deleted the device");
     res.redirect("/patient/dashboard");
   })
 );
