@@ -10,9 +10,9 @@ router.get(
   "/dashboard",
   catchAsync(async (req, res) => {
     const patientIds = req.user.patients;
-    const data = await Patient.find({ _id: { $in: patientIds } });
-    res.render("patient/dashboard", {
-      data,
+    const patients = await Patient.find({ _id: { $in: patientIds } });
+    res.render("physician/dashboard", {
+      patients,
       page_css: null,
       page_script: null,
       title: "Dashboard",

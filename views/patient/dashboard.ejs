@@ -1,20 +1,11 @@
 <% layout('layouts/boilerplate')%>
 <h1>Hi there <%= currentUser.name %> !!</h1>
 
-<% if(currentUser && currentUser.constructor.modelName === 'Patient') {%>
-
-<a href="/patient/device/new" style="color: black; font-weight: bold">
-  Add a device
-</a>
-
-<% } else if(currentUser && currentUser.constructor.modelName === 'Physician')
-{%>
-
-<h2>All Patients</h2>
-
-<% } %>
+<a href="/patient/device/new" style="color: black; font-weight: bold"
+  >Add a device</a
+>
 <ul>
-  <% for (let info of data){%>
-  <li><a href="/patient/device/<%= info._id %>"><%= info.name %></a></li>
+  <% for (let device of patient_devices){%>
+  <li><a href="/patient/device/<%= device._id %>"><%= device.name %></a></li>
   <% }%>
 </ul>

@@ -1,0 +1,11 @@
+<% layout('layouts/boilerplate')%>
+<h1>Hi there <%= currentUser.name %> !!</h1>
+
+<h2>All Patients</h2>
+<ul>
+  <% for (let patient of patients){%>
+  <li>
+    <a href="/physician/patient/<%= patient._id %>"><%= patient.name %></a>
+  </li>
+  <% }%>
+</ul>
