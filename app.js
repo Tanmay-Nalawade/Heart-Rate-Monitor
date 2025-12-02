@@ -13,6 +13,7 @@ const app = express();
 // Routes
 const userRoutes = require("./routes/users");
 const patientRoutes = require("./routes/patients");
+const physicianRoutes = require("./routes/physicians");
 
 require("./db"); // To run mongoose.connect() code from db.js
 
@@ -86,6 +87,7 @@ app.use((req, res, next) => {
 
 app.use("/", userRoutes);
 app.use("/patient", patientRoutes);
+app.use("/physician", physicianRoutes);
 
 app.get("/", (req, res) => {
   res.render("home", {
