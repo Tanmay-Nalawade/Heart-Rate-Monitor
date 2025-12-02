@@ -9,6 +9,11 @@ const PatientSchema = new Schema({
     unique: true,
     trim: true,
   },
+  name: {
+    type: String,
+    required: true,
+    default: "Default User",
+  },
   devices: [
     {
       type: Schema.Types.ObjectId,

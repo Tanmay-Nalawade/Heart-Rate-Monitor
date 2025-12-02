@@ -1,11 +1,11 @@
 <% layout('layouts/boilerplate')%>
-<h1>Hi there <%= currentUser.email %> !!</h1>
+<h1>Hi there <%= currentUser.name %> !!</h1>
 
 <a href="/patient/device/new" style="color: black; font-weight: bold"
   >Add a device</a
 >
 <ul>
-  <% for (let device of patient_devices){%>
-  <li><a href="/patient/device/<%= device._id %>"><%= device.name %></a></li>
+  <% for (let info of data){%>
+  <li><a href="/patient/device/<%= info._id %>"><%= info.name %></a></li>
   <% }%>
 </ul>
