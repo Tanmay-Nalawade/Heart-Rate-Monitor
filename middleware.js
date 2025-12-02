@@ -1,5 +1,7 @@
 const { deviceSchema } = require("./validate_schema");
 const ExpressError = require("./utils/ExpressError");
+const Patient = require("./models/patient");
+const Physician = require("./models/physician");
 
 module.exports.isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
@@ -37,4 +39,17 @@ module.exports.validateDevice = (req, res, next) => {
   } else {
     next();
   }
+};
+
+// Check if he is a user
+module.exports.isPatient = (req, res, next) => {
+  // Check if the user is authenticated AND is an instance of the Patient model
+  if (req.isAuthenticated() && req.user instanceof Patient) {
+    return next();
+  }
+  req.flash(
+    "error",
+    "You must be logged in as a patient to access this dashboard."
+  );
+  return res.redirect("/login");
 };
