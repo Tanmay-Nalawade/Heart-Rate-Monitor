@@ -3,8 +3,20 @@ const router = express.Router();
 const Patient = require("../models/patient");
 const catchAsync = require("../utils/catchAsync");
 const { isLoggedIn, isPhysician } = require("../middleware");
+const Physician = require("../models/physician");
 
-router.use(isLoggedIn, isPhysician);
+// router.use(isLoggedIn, isPhysician);
+
+router.get(
+  "/",
+  catchAsync(async (req, res) => {
+    const physicians = await Physician.find({});
+    res.render("physician/physicians", {
+      physicians,
+      title: "Physicians",
+    });
+  })
+);
 
 router.get(
   "/dashboard",

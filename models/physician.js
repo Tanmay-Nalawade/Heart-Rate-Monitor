@@ -9,6 +9,9 @@ const PhysicianSchema = new Schema({
     unique: true,
     trim: true,
   },
+  image: { type: String },
+  description: { type: String },
+  location: { type: String },
   name: {
     type: String,
     required: true,
