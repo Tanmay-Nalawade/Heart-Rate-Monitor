@@ -54,7 +54,7 @@ module.exports.isPatient = (req, res, next) => {
   return res.redirect("/login");
 };
 
-// check is the user is Physician
+// check if the user is Physician
 module.exports.isPhysician = (req, res, next) => {
   // Check if the user is authenticated AND is an instance of the Physician model
   if (req.isAuthenticated() && req.user instanceof Physician) {
