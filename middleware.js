@@ -53,3 +53,16 @@ module.exports.isPatient = (req, res, next) => {
   );
   return res.redirect("/login");
 };
+
+// check is the user is Physician
+module.exports.isPhysician = (req, res, next) => {
+  // Check if the user is authenticated AND is an instance of the Physician model
+  if (req.isAuthenticated() && req.user instanceof Physician) {
+    return next();
+  }
+  req.flash(
+    "error",
+    "You must be logged in as a physician to access this dashboard."
+  );
+  return res.redirect("/login");
+};
