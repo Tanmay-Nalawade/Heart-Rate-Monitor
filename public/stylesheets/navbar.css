@@ -27,7 +27,7 @@ body {
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 .navbar .right {
-  width: 400px;
+  width: 600px;
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -67,7 +67,7 @@ body {
 }
 
 .mobileNav {
-  width: 80px;
+  width: 150px;
   height: 100vh;
   background-color: #25252b; /* Dark theme background */
   border-left: 2px solid #ff2770;
@@ -197,7 +197,7 @@ body {
       "dimensional dimensional";
   }
 }
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 1000px) {
   .project-grid {
     margin-top: 100px;
   }
