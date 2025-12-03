@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Device = require("../models/device");
+const Patient = require("../models/patient");
+const Physician = require("../models/physician");
 const catchAsync = require("../utils/catchAsync");
 const {
   isLoggedIn,
@@ -107,5 +109,43 @@ router.delete(
     res.redirect("/patient/dashboard");
   })
 );
+
+// choose a physician
+router.post("/choose-physician/:physicianId", isLoggedIn, async (req, res) => {
+  const { physicianId } = req.params;
+  const patientId = req.user._id;
+
+  try {
+    // Update the Patient Document
+    const patient = await Patient.findByIdAndUpdate(
+      patientId,
+      // Set the reference to the chosen physician
+      { assignedPhysician: physicianId }
+    );
+
+    // Update the Physician Document
+    const physician = await Physician.findById(physicianId);
+
+    if (!physician) {
+      req.flash("error", "Physician not found.");
+      return res.redirect("/physicians");
+    }
+
+    // Check if the patient is already in the array to prevent duplicates
+    if (!physician.patients.includes(patientId)) {
+      physician.patients.push(patientId);
+      await physician.save();
+    }
+
+    req.flash(
+      "success",
+      `You have chosen Dr. ${physician.name.split(" ")[1]} as your Physician!`
+    );
+    res.redirect("/patient/dashboard");
+  } catch (e) {
+    req.flash("error", "An error occurred while assigning the physician.");
+    res.redirect("/physicians");
+  }
+});
 
 module.exports = router;

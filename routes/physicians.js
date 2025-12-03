@@ -22,6 +22,7 @@ router.get(
 // show a particular physician view
 router.get(
   "/:id",
+  isLoggedIn,
   catchAsync(async (req, res) => {
     const physician = await Physician.findById(req.params.id);
     if (!physician) {
