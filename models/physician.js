@@ -9,7 +9,11 @@ const PhysicianSchema = new Schema({
     unique: true,
     trim: true,
   },
-  image: { type: String },
+  image: {
+    type: String,
+    default:
+      "https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo",
+  },
   description: { type: String },
   location: { type: String },
   name: {

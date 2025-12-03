@@ -16,8 +16,6 @@ const seedPhysicians = [
   {
     email: "dr.smith@clinic.com",
     name: "Dr. Evelyn Smith",
-    image:
-      "https://unsplash.com/photos/man-in-white-dress-shirt-wearing-black-framed-eyeglasses-pTrhfmj2jDA",
     description:
       "Experienced cardiologist specializing in rhythm disorders and interventional procedures.",
     location: "New York, NY",
