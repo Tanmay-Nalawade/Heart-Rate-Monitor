@@ -29,7 +29,15 @@ router.get(
       req.flash("error", "Cannot find the Physician!");
       return res.redirect("/physicians");
     }
-    res.render("physician/show", { physician });
+    const patient = await Patient.findById(req.user._id);
+    let isChosen = false;
+    if (
+      patient.assignedPhysician &&
+      physician._id.equals(patient.assignedPhysician)
+    ) {
+      isChosen = true;
+    }
+    res.render("physician/show", { physician, isChosen });
   })
 );
 
