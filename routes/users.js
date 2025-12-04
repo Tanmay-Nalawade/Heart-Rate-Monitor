@@ -77,8 +77,8 @@ router.post("/register", async (req, res) => {
 
 router.post(
   "/login",
-  authenticatePatientOrPhysician,
   storeReturnTo,
+  authenticatePatientOrPhysician,
   // passport.authenticate logs the user in and clears req.session
   (req, res) => {
     req.flash("success", "Welcome back!");

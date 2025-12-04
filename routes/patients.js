@@ -166,7 +166,7 @@ router.delete(
         physician.name.split(" ")[1]
       } successfully removed from your care team.`
     );
-    res.redirect("/patient/dashboard");
+    res.redirect("/physician");
   })
 );
 
