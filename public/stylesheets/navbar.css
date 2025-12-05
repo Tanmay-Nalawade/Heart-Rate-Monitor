@@ -43,10 +43,13 @@ body {
   color: #ff2770;
   text-shadow: 0 0 10px #ff2770;
 }
-.navbar .right img {
+.navbar ul {
+  background-color: #25252b;
+}
+/* .navbar .right img {
   width: 24px;
   height: 24px;
-}
+} */
 
 .bar1,
 .bar2,
