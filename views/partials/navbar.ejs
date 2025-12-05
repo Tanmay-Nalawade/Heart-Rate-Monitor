@@ -13,18 +13,18 @@
     <a href="/login">Login/Register</a>
     <% } else {%>
       <!-- Example single danger button -->
-<div class="btn-group">
-  <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-    My Account
-  </button>
-  <ul class="dropdown-menu dropdown-menu-dark">
-    <li><a class="dropdown-item" href="#">Action</a></li>
-    <li><a class="dropdown-item" href="#">Another action</a></li>
-    <li><a class="dropdown-item" href="#">Something else here</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="/logout">Logout</a></li>
-  </ul>
-</div>
+    <div class="btn-group">
+      <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        My Account
+      </button>
+      <ul class="dropdown-menu dropdown-menu-dark">
+        <li><a class="dropdown-item" href="/patient/dashboard">Dashborad</a></li>
+        <li><a class="dropdown-item" href="#">Assigned Physicians</a></li>
+        <li><a class="dropdown-item" href="#">Account Info.</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="/logout">Logout</a></li>
+      </ul>
+    </div>
     <% } %>
   </nav>
   <div class="hamburger">
