@@ -39,7 +39,18 @@
     <% if(!currentUser) {%>
     <a href="/login">Login/Register</a>
     <% } else {%>
-    <a href="/logout">Logout</a>
+    <div class="btn-group dropstart">
+      <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        My Account
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="/patient/dashboard">Dashborad</a></li>
+        <li><a class="dropdown-item" href="#">Assigned Physicians</a></li>
+        <li><a class="dropdown-item" href="#">Account Info.</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="/logout">Logout</a></li>
+      </ul>
+    </div>
     <% } %>
   </nav>
 </header>

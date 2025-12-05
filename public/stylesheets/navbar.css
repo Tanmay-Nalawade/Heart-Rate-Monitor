@@ -45,6 +45,7 @@ body {
 }
 .navbar ul {
   background-color: #25252b;
+  border: 1px solid #ff2770;
 }
 /* .navbar .right img {
   width: 24px;
@@ -85,10 +86,10 @@ body {
   padding: 16px;
   transition: transform 0.3s;
 }
-.mobileNav img {
+/* .mobileNav img {
   height: 24px;
   width: 24px;
-}
+} */
 .openDrawer {
   transform: translateX(-160px);
 }
