@@ -1,10 +1,15 @@
 <% layout('layouts/bootstrap')%>
-<h1>Hi there <%= currentUser.name %> !!</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="text-primary">Hi there, <b><%= currentUser.name %>!</b></h1>
 
-<a href="/patient/device/new" style="color: black; font-weight: bold"
-  >Add a device</a
->
+  <a href="/patient/device/new" class="ml-auto">
+    <button type="button" class="btn btn-success btn-lg">
+      Add a New Device
+    </button>
+  </a>
+</div>
 
+<hr />
 <% for (let device of patient_devices){%>
 <div class="card" style="margin: 20px 0">
   <div class="card-header">
