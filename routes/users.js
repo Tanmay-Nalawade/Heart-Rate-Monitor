@@ -70,7 +70,7 @@ router.post("/register", async (req, res) => {
       req.flash("success", "Welcome to Core-Beat!");
       const redirectPath =
         registeredRole === "physician"
-          ? "/physician/dashboard"
+          ? "/physician/complete-profile"
           : "/patient/dashboard";
 
       res.redirect(redirectPath);

@@ -40,6 +40,13 @@ router.get(
   })
 );
 
+router.get("/complete-profile", isLoggedIn, isPhysician, (req, res) => {
+  // Render the form. Pass the current user data so fields can be pre-filled (like name).
+  res.render("physician/completeProfile", {
+    currentUser: req.user,
+  });
+});
+
 router.get(
   "/dashboard",
   catchAsync(async (req, res) => {
