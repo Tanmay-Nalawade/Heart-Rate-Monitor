@@ -82,8 +82,11 @@
                 name="image"
                 placeholder="e.g., https://yourimage.com/photo.jpg"
                 value="<%= currentUser.image !== 'https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo' ? currentUser.image : '' %>"
-                required
               />
+              <div class="form-text">
+                Paste a direct link (URL) to your profile picture.
+                <b>You can leave this field blank to use the default image.</b>
+              </div>
               <div class="invalid-feedback">
                 Paste a direct link (URL) to your profile picture.
               </div>

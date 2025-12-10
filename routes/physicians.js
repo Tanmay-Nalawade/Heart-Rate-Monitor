@@ -2,7 +2,11 @@ const express = require("express");
 const router = express.Router();
 const Patient = require("../models/patient");
 const catchAsync = require("../utils/catchAsync");
-const { isLoggedIn, isPhysician } = require("../middleware");
+const {
+  isLoggedIn,
+  isPhysician,
+  validatePhysicianProfile,
+} = require("../middleware");
 const Physician = require("../models/physician");
 
 // router.use(isLoggedIn, isPhysician);
@@ -29,9 +33,27 @@ router.get("/complete-profile", isLoggedIn, isPhysician, (req, res) => {
 // You MUST have this route handler defined in your Express router:
 router.post(
   "/complete-profile",
-  /* middleware here */ async (req, res) => {
-    res.send("Nothing");
-  }
+  isLoggedIn,
+  isPhysician,
+  validatePhysicianProfile,
+  catchAsync(async (req, res) => {
+    const physicianId = req.user._id;
+    const { description, location, image, name } = req.body;
+
+    await Physician.findByIdAndUpdate(physicianId, {
+      $set: {
+        description,
+        location,
+        image:
+          image ||
+          "https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo",
+        name,
+      },
+    });
+
+    req.flash("success", "Your Profile is complete!");
+    res.redirect("/physician/dashboard");
+  })
 );
 
 router.get(
