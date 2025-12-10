@@ -82,8 +82,9 @@
                 name="image"
                 placeholder="e.g., https://yourimage.com/photo.jpg"
                 value="<%= currentUser.image !== 'https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo' ? currentUser.image : '' %>"
+                required
               />
-              <div class="form-text">
+              <div class="invalid-feedback">
                 Paste a direct link (URL) to your profile picture.
               </div>
             </div>
@@ -100,6 +101,9 @@
                 placeholder="e.g., Tucson, AZ"
                 required
               />
+              <div class="invalid-feedback">
+                Please provide your primary practice location (City, State).
+              </div>
             </div>
 
             <div class="mb-3">
@@ -112,6 +116,10 @@
                 placeholder="Briefly describe your specialization and experience."
                 required
               ></textarea>
+              <div class="invalid-feedback">
+                A brief professional description above 20 characters is
+                required.
+              </div>
             </div>
 
             <button class="btn btn-primary btn-lg w-100 mt-4">

@@ -26,6 +26,14 @@ router.get("/complete-profile", isLoggedIn, isPhysician, (req, res) => {
   });
 });
 
+// You MUST have this route handler defined in your Express router:
+router.post(
+  "/complete-profile",
+  /* middleware here */ async (req, res) => {
+    res.send("Nothing");
+  }
+);
+
 router.get(
   "/dashboard",
   catchAsync(async (req, res) => {
