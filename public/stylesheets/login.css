@@ -295,7 +295,7 @@
 }
 
 /* Responsive: Tablet and below */
-@media screen and (max-width: 1024px) {
+/* @media screen and (max-width: 1024px) {
   .container {
     width: 680px;
     height: auto;
@@ -307,7 +307,7 @@
   .form-box h2 {
     font-size: 28px;
   }
-}
+} */
 
 /* Responsive: Small tablets / large phones */
 @media screen and (max-width: 768px) {
@@ -366,25 +366,25 @@
     padding: 24px 20px;
     text-align: left;
   }
-  
+
   /* Hide register form by default on mobile */
   .form-box.Register,
   .info-content.Register {
     display: none;
   }
-  
+
   /* Show register form when container is active */
   .container.active .form-box.Register,
   .container.active .info-content.Register {
     display: flex;
   }
-  
+
   /* Hide login form when container is active */
   .container.active .form-box.Login,
   .container.active .info-content.Login {
     display: none;
   }
-  
+
   /* Override transforms for animations on small screens to avoid off-canvas */
   .form-box.Login .animation,
   .form-box.Register .animation,
