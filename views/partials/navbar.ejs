@@ -21,7 +21,19 @@
       </button>
       <ul class="dropdown-menu dropdown-menu-dark">
         <li><a class="dropdown-item" href="#">Assigned Physicians</a></li>
-        <li><a class="dropdown-item" href="#">Account Info.</a></li>
+        <% if (currentUser && currentUser.role === 'patient') { %>
+        <li>
+          <a class="dropdown-item" href="/patient/account_info"
+            >Account Info.</a
+          >
+        </li>
+        <% } else if (currentUser && currentUser.role === 'physician') { %>
+        <li>
+          <a class="dropdown-item" href="/physician/complete-profile"
+            >Account Info.</a
+          >
+        </li>
+        <% } %>
         <li><hr class="dropdown-divider" /></li>
         <li><a class="dropdown-item" href="/logout">Logout</a></li>
       </ul>
