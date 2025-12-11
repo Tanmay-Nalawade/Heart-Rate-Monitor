@@ -33,6 +33,7 @@ app.use(methodOverried("_method"));
 
 const Patient = require("./models/patient");
 const Physician = require("./models/physician");
+const Reading = require("./models/reading");
 
 // The session
 const sessionConfig = {
@@ -110,26 +111,52 @@ app.get("/about", (req, res) => {
   });
 });
 
-app.post("/activity", (req, res) => {
-  const { apiKey } = req.body; // matches "apiKey" from your device JSON
+app.post("/reading", async (req, res) => {
+  const { apiKey, deviceId, heartRate, spo2, raw, timestamp } = req.body;
 
   const isValidApiKey = apiKey === API_KEY;
 
   console.log("Received JSON:", JSON.stringify(req.body, null, 4));
   console.log("Validation Result:", isValidApiKey ? "Success" : "Failure");
 
-  if (isValidApiKey) {
-    return res.status(200).json({
-      message: "Success!",
-      received: req.body,
-    });
-  } else {
+  if (!isValidApiKey) {
     return res.status(403).json({
       message: "Failure: Invalid API Key",
       received: req.body,
     });
   }
+
+  // Basic input validation
+  if (!deviceId || typeof heartRate === "undefined") {
+    return res.status(400).json({
+      message: "Missing required fields: deviceId and heartRate",
+    });
+  }
+
+  try {
+    const reading = new Reading({
+      deviceHardwareId: deviceId,
+      heartRate,
+      spo2,
+      raw,
+      // If Photon sends a timestamp (e.g., ms since epoch), use it; otherwise default
+      readingTime: timestamp ? new Date(timestamp) : undefined,
+    });
+
+    await reading.save();
+
+    return res.status(201).json({
+      message: "Success! Reading stored",
+      id: reading._id,
+    });
+  } catch (err) {
+    console.error("Error saving reading:", err);
+    return res.status(500).json({
+      message: "Internal server error while saving reading",
+    });
+  }
 });
+
 
 app.all(/(.*)/, (req, res, next) => {
   next(new ExpressError("Page Not Found", 404));
