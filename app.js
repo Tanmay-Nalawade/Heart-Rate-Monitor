@@ -7,8 +7,11 @@ const LocalStrategy = require("passport-local");
 const ejsMate = require("ejs-mate");
 const methodOverried = require("method-override");
 const flash = require("connect-flash");
+const cors = require("cors");
+
 
 const app = express();
+const API_KEY = process.env.HEARTTRACK_API_KEY || "YOUR_SECRET_KEY";
 
 // Routes
 const userRoutes = require("./routes/users");
@@ -46,6 +49,10 @@ const sessionConfig = {
 // This should be befoer passport session initialisation
 app.use(session(sessionConfig));
 app.use(flash());
+
+// Middleware
+app.use(cors());
+app.use(express.json());
 
 // Pasport Middlewares
 app.use(passport.initialize());
@@ -103,6 +110,27 @@ app.get("/about", (req, res) => {
   });
 });
 
+app.post("/activity", (req, res) => {
+  const { apiKey } = req.body; // matches "apiKey" from your device JSON
+
+  const isValidApiKey = apiKey === API_KEY;
+
+  console.log("Received JSON:", JSON.stringify(req.body, null, 4));
+  console.log("Validation Result:", isValidApiKey ? "Success" : "Failure");
+
+  if (isValidApiKey) {
+    return res.status(200).json({
+      message: "Success!",
+      received: req.body,
+    });
+  } else {
+    return res.status(403).json({
+      message: "Failure: Invalid API Key",
+      received: req.body,
+    });
+  }
+});
+
 app.all(/(.*)/, (req, res, next) => {
   next(new ExpressError("Page Not Found", 404));
 });
@@ -117,6 +145,8 @@ app.use((err, req, res, next) => {
     title: "Error",
   });
 });
+
+
 
 app.listen(8080, () => {
   console.log("Serving on port 8080");
