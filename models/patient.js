@@ -14,6 +14,12 @@ const PatientSchema = new Schema({
     required: true,
     default: "Default User",
   },
+  role: {
+    type: String,
+    enum: ["patient"], // Restrict it to only the string 'patient'
+    default: "patient", // Automatically set this value on creation
+    required: true,
+  },
   devices: [
     {
       type: Schema.Types.ObjectId,
