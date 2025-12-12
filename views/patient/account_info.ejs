@@ -1,0 +1,65 @@
+<% layout('layouts/bootstrap')%>
+<div class="container d-flex justify-content-center align-items-center mb-5">
+  <div class="row">
+    <div class="col-12 col-lg-10 offset-lg-1">
+      <div class="card shadow">
+        <div class="card-body">
+          <h5 class="card-title text-primary">
+            Manage Your Account Information
+          </h5>
+          <p class="text-muted border-bottom pb-2">
+            Review and update your personal details.
+          </p>
+
+          <form
+            action="/patient/accountInfo"
+            method="POST"
+            class="validated-form"
+            novalidate
+          >
+            <h6 class="text-secondary mb-3">Permanent Account Information</h6>
+
+            <div class="mb-3">
+              <label class="form-label text-muted" for="email"
+                >Email (Login ID, Cannot be changed)</label
+              >
+              <input
+                class="form-control bg-light border-secondary"
+                type="email"
+                id="email"
+                name="email"
+                value="<%= currentUser.email %>"
+                disabled
+              />
+              <div class="form-text">
+                Your primary email address cannot be changed here.
+              </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <h6 class="text-primary mb-3">Editable Personal Details</h6>
+
+            <div class="mb-3">
+              <label class="form-label" for="name">Full Name</label>
+              <input
+                class="form-control"
+                type="text"
+                id="name"
+                name="name"
+                value="<%= currentUser.name !== 'Default User' ? currentUser.name : currentUser.name %>"
+                placeholder="John Doe"
+                required
+              />
+              <div class="invalid-feedback">Please enter your full name.</div>
+            </div>
+
+            <button class="btn btn-success btn-lg w-100 mt-4">
+              Update Account Info
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
