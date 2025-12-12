@@ -28,6 +28,30 @@ router.get(
   })
 );
 
+router.post(
+  "/accountInfo",
+  isLoggedIn,
+  isPatient,
+  catchAsync(async (req, res) => {
+    const patientId = req.user._id;
+    const { name } = req.body;
+
+    const updateFields = {
+      $set: {
+        name,
+      },
+    };
+
+    await Patient.findByIdAndUpdate(patientId, updateFields);
+
+    req.flash(
+      "success",
+      "Your Account Information has been updated successfully!"
+    );
+    res.redirect("/patient/dashboard");
+  })
+);
+
 // Creating/Adding a new device
 router.get("/device/new", async (req, res) => {
   const device = await Device.findById(req.params.id);
