@@ -40,11 +40,16 @@ router.post(
   isPatient,
   catchAsync(async (req, res) => {
     const patientId = req.user._id;
-    const { name } = req.body;
+    const { name, dob, phone, emergencyContactName, emergencyContactPhone } =
+      req.body;
 
     const updateFields = {
       $set: {
         name,
+        dob,
+        phone,
+        emergencyContactName,
+        emergencyContactPhone,
       },
     };
 

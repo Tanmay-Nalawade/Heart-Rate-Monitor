@@ -14,6 +14,10 @@ const PatientSchema = new Schema({
     required: true,
     default: "Default User",
   },
+  dob: Date,
+  phone: String,
+  emergencyContactName: String,
+  emergencyContactPhone: String,
   role: {
     type: String,
     enum: ["patient"], // Restrict it to only the string 'patient'
