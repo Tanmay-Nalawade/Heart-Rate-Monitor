@@ -23,6 +23,7 @@
           action="/physician/complete-profile"
           method="POST"
           class="validated-form"
+          enctype="multipart/form-data"
           novalidate
         >
           <h6 class="text-secondary mb-3">Permanent Account Information</h6>
@@ -74,14 +75,15 @@
 
           <div class="mb-3">
             <label class="form-label" for="image">Profile Image URL</label>
-            <input
+            <input type="file" name="image" id="image" />
+            <!-- <input
               class="form-control"
               type="url"
               id="image"
               name="image"
               placeholder="e.g., https://yourimage.com/photo.jpg"
-              value="<%= currentUser.image !== 'https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo' ? currentUser.image : '' %>"
-            />
+              value="<%= currentUser.image !== 'https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo' ? currentUser.image : '' %>" -->
+            <!-- /> -->
             <div class="form-text">
               Paste a direct link (URL) to your profile picture.
               <b>You can leave this field blank to use the default image.</b>
