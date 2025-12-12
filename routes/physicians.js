@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const upload = multer({ dest: "/uploads" });
 const router = express.Router();
 const Patient = require("../models/patient");
 const catchAsync = require("../utils/catchAsync");
@@ -24,38 +26,41 @@ router.get(
   })
 );
 
-router.get("/complete-profile", isLoggedIn, isPhysician, (req, res) => {
-  // Render the form. Pass the current user data so fields can be pre-filled (like name).
-  res.render("physician/completeProfile", {
-    currentUser: req.user,
-  });
-});
-
-// You MUST have this route handler defined in your Express router:
-router.post(
-  "/complete-profile",
-  isLoggedIn,
-  isPhysician,
-  validatePhysicianProfile,
-  catchAsync(async (req, res) => {
-    const physicianId = req.user._id;
-    const { description, location, image, name } = req.body;
-
-    await Physician.findByIdAndUpdate(physicianId, {
-      $set: {
-        description,
-        location,
-        image:
-          image ||
-          "https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo",
-        name,
-      },
+router
+  .route("/complete-profile")
+  .get("/complete-profile", isLoggedIn, isPhysician, (req, res) => {
+    // Render the form. Pass the current user data so fields can be pre-filled (like name).
+    res.render("physician/completeProfile", {
+      currentUser: req.user,
     });
-
-    req.flash("success", "Your Profile is complete!");
-    res.redirect("/physician/dashboard");
   })
-);
+
+  // You MUST have this route handler defined in your Express router:
+  .post(
+    "/complete-profile",
+    isLoggedIn,
+    isPhysician,
+    upload.single("image"),
+    validatePhysicianProfile,
+    catchAsync(async (req, res) => {
+      const physicianId = req.user._id;
+      const { description, location, image, name } = req.body;
+
+      await Physician.findByIdAndUpdate(physicianId, {
+        $set: {
+          description,
+          location,
+          image:
+            image ||
+            "https://placehold.co/400x400/007bff/ffffff?text=Physician%20Photo",
+          name,
+        },
+      });
+
+      req.flash("success", "Your Profile is complete!");
+      res.redirect("/physician/dashboard");
+    })
+  );
 
 router.get(
   "/dashboard",
