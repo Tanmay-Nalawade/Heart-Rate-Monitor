@@ -33,41 +33,51 @@ router.get("/login", (req, res) => {
   });
 });
 
-router.post("/register", async (req, res) => {
-  const { email, password, role, serialNumber, licenseId } = req.body;
+router.post("/register", async (req, res, next) => {
+  try {
+    const { email, password, role, serialNumber, licenseId } = req.body;
 
-  // User object to upload
-  let userDetails = { email };
-  // To hold either patient or physician model
-  let RegisterModel;
-  // For redirection
-  let registeredRole;
+    // User object to upload
+    let userDetails = { email };
+    // To hold either patient or physician model
+    let RegisterModel;
+    // For redirection
+    let registeredRole;
 
-  if (role === "patient") {
-    // for patient use deviceId (optional)
-    userDetails.devices = [];
-    if (serialNumber && serialNumber.trim()) {
-      const newDevice = new Device({
-        serial_number: serialNumber,
-      });
-      await newDevice.save();
-      userDetails.devices = [newDevice._id];
+    if (role === "patient") {
+      // for patient use deviceId (optional)
+      userDetails.devices = [];
+      if (serialNumber && serialNumber.trim()) {
+        const newDevice = new Device({
+          serial_number: serialNumber,
+        });
+        await newDevice.save();
+        userDetails.devices = [newDevice._id];
+      }
+      RegisterModel = User;
+      registeredRole = "patient";
+    } else if (role === "physician") {
+      // for Physician, require licenseId
+      if (!licenseId || !licenseId.trim()) {
+        req.flash("error", "Medical License ID is required for physicians.");
+        return res.redirect("/login");
+      }
+      userDetails.licenseId = licenseId.trim();
+      RegisterModel = Physician;
+      registeredRole = "physician";
     }
-    RegisterModel = User;
-    registeredRole = "patient";
-  } else if (role === "physician") {
-    // for Physician, use licenseId
-    userDetails.licenseId = licenseId;
-    RegisterModel = Physician;
-    registeredRole = "physician";
+    const user = new RegisterModel(userDetails);
+    const registered_patient = await RegisterModel.register(user, password);
+    req.login(registered_patient, (err) => {
+      if (err) return next(err);
+      req.flash("success", "Welcome!");
+      const dest = registeredRole === "physician" ? "/physician/dashboard" : "/patient/dashboard";
+      res.redirect(dest);
+    });
+  } catch (err) {
+    req.flash("error", err.message || "Registration failed");
+    res.redirect("/login");
   }
-  const user = new RegisterModel(userDetails);
-  const registered_patient = await RegisterModel.register(user, password);
-  req.login(registered_patient, (err) => {
-    if (err) return next(err);
-    req.flash("success", "Welcome to Yelp Camp!");
-    res.redirect("/patient/dashboard");
-  });
 });
 
 router.post(
@@ -82,9 +92,7 @@ router.post(
       role === "physician" ? "/physician/dashboard" : "/patient/dashboard";
     const redirectUrl = res.locals.returnTo || defaultDashboard;
     delete req.session.returnTo;
-    // Authentication succeeded. Determine redirect based on the authenticated user's type.
-    // We check the model name attached to req.user (provided by Passport).
-    res.redirect(redirectUrl); // Fallback
+    res.redirect(redirectUrl);
   }
 );
 

@@ -1,0 +1,22 @@
+<% layout('layouts/boilerplate')%>
+<h1>Physician Dashboard</h1>
+
+<p>Welcome, Dr. <%= currentUser.email %></p>
+
+<p>License ID: <strong><%= currentUser.licenseId %></strong></p>
+
+<h2 style="margin-top: 2rem;">My Patients</h2>
+
+<% if (!patients || !patients.length) { %>
+  <p style="color: #9ca3af;">No patients assigned.</p>
+<% } else { %>
+  <ul>
+    <% patients.forEach(p => { %>
+      <li>
+        <strong><%= p.email %></strong>
+        &nbsp;—&nbsp;
+        <a href="/physician/patients/<%= p._id %>/readings">View readings</a>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>

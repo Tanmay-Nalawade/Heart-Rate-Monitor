@@ -16,6 +16,7 @@ const API_KEY = process.env.HEARTTRACK_API_KEY || "YOUR_SECRET_KEY";
 // Routes
 const userRoutes = require("./routes/users");
 const patientRoutes = require("./routes/patients");
+const physicianRoutes = require("./routes/physicians");
 
 require("./db"); // To run mongoose.connect() code from db.js
 
@@ -81,10 +82,26 @@ passport.use(
   )
 );
 
-// How to store user in the session
-passport.serializeUser(Patient.serializeUser());
-// How to get user out of the session
-passport.deserializeUser(Patient.deserializeUser());
+// How to store user in the session (handle both Patient and Physician)
+passport.serializeUser((user, done) => {
+  const userType = user.constructor.modelName;
+  done(null, { id: user._id, type: userType });
+});
+
+// How to get user out of the session (handle both Patient and Physician)
+passport.deserializeUser(async (data, done) => {
+  try {
+    let user;
+    if (data.type === "Physician") {
+      user = await Physician.findById(data.id);
+    } else {
+      user = await Patient.findById(data.id);
+    }
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
 
 app.use((req, res, next) => {
   // Make logged-in user (patient or physician) available in every EJS view
@@ -99,6 +116,7 @@ app.use((req, res, next) => {
 
 app.use("/", userRoutes);
 app.use("/patient", patientRoutes);
+app.use("/physician", physicianRoutes);
 
 app.get("/", (req, res) => {
   res.render("home", {
