@@ -34,6 +34,7 @@ app.use(methodOverried("_method"));
 const Patient = require("./models/patient");
 const Physician = require("./models/physician");
 const Reading = require("./models/reading");
+const Device = require("./models/device");
 
 // The session
 const sessionConfig = {
@@ -86,9 +87,13 @@ passport.serializeUser(Patient.serializeUser());
 passport.deserializeUser(Patient.deserializeUser());
 
 app.use((req, res, next) => {
-  res.locals.currentUser = req.user;
+  // Make logged-in user (patient or physician) available in every EJS view
+  res.locals.currentUser = req.patient || req.physician || req.user || null;
+
+  // Flash messages
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
+
   next();
 });
 
@@ -112,7 +117,7 @@ app.get("/about", (req, res) => {
 });
 
 app.post("/reading", async (req, res) => {
-  const { apiKey, deviceId, heartRate: hrRaw, spo2: spo2Raw, timestamp } = req.body;
+    const { apiKey, deviceId, heartRate: hrRaw, spo2: spo2Raw, timestamp } = req.body;
 
   const isValidApiKey = apiKey === API_KEY;
 
@@ -131,7 +136,6 @@ app.post("/reading", async (req, res) => {
   let spo2 = spo2Raw !== undefined ? Number(spo2Raw) : undefined;
 
   // ---- Handle your sentinel / bad readings ----
-  // Ignore readings with invalid heart rate
   if (Number.isNaN(heartRate) || heartRate < 0 || heartRate === -999) {
     console.log("Ignoring reading because heartRate is invalid/sentinel:", hrRaw);
     return res.status(200).json({
@@ -140,7 +144,6 @@ app.post("/reading", async (req, res) => {
     });
   }
 
-  // Allow spo2 to be missing if it's bad/sentinel
   if (Number.isNaN(spo2) || spo2 < 0 || spo2 === -999) {
     console.log("SpO2 is invalid/sentinel, will be stored as undefined:", spo2Raw);
     spo2 = undefined; // spo2 is optional in the schema
@@ -164,16 +167,42 @@ app.post("/reading", async (req, res) => {
   }
 
   try {
-    const reading = new Reading({
-      deviceHardwareId: deviceId,
+    // NEW: find the Device by hardwareId
+    const device = await Device.findOne({ hardwareId: deviceId }).populate("owner");
+    if (!device) {
+      console.error("Unknown device:", deviceId);
+      return res.status(404).json({
+        message: "Unknown deviceId (no matching Device found)",
+        received: req.body,
+      });
+    }
+
+    if (!device.owner) {
+      console.error("Device has no owner (Patient) set:", deviceId);
+      return res.status(500).json({
+        message: "Device has no associated patient",
+      });
+    }
+
+    // Build reading document
+    const readingData = {
+      device: device._id,
+      patient: device.owner._id,
       heartRate,
       spo2,
-      raw: req.body, // keep full webhook payload if you want
-      // only set readingTime if we parsed a valid date
-      ...(readingTime ? { readingTime } : {}),
-    });
+      deviceHardwareId: deviceId, // optional, for debugging
+      raw: req.body,
+    };
 
-    await reading.save();
+    if (readingTime) {
+      readingData.readingTime = readingTime;
+    }
+
+    const reading = await Reading.create(readingData);
+
+    // Optional: update last seen
+    device.lastSeenAt = new Date();
+    await device.save();
 
     return res.status(201).json({
       message: "Success! Reading stored",

@@ -4,10 +4,15 @@ const { Schema } = mongoose;
 
 const readingSchema = new Schema(
   {
-    deviceHardwareId: {
-      type: String,
+    device: {
+      type: Schema.Types.ObjectId,
+      ref: "Device",
       required: true,
-      index: true, // helpful for queries by device
+    },
+    patient: {
+      type: Schema.Types.ObjectId,
+      ref: "Patient",
+      required: true,
     },
     heartRate: {
       type: Number,
@@ -19,17 +24,16 @@ const readingSchema = new Schema(
       min: 0,
       max: 100,
     },
-    raw: {
-      type: Schema.Types.Mixed, // for any extra sensor data blob
-    },
     readingTime: {
       type: Date,
-      default: Date.now, // either device time or server time
+      required: false, // you’re already treating it as optional
     },
+
+    // optional for debugging / raw logs
+    deviceHardwareId: String,
+    raw: Schema.Types.Mixed,
   },
-  {
-    timestamps: true, // adds createdAt, updatedAt
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Reading", readingSchema);
