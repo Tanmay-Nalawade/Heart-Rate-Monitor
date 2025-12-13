@@ -13,15 +13,21 @@
 <% for (let device of patient_devices){%>
 <div class="card" style="margin: 20px 0">
   <div class="card-header">
-    Data readings are taken every <b><%= device.reading_freq %></b> minutes.
+    Data readings are taken every
+    <b><%= device.measurementConfig.frequencyMinutes %></b> minutes.
   </div>
   <div class="card-body">
-    <h5 class="card-title"><%= device.name %></h5>
+    <h5 class="card-title"><%= device.label %></h5>
     <p class="card-text">
-      With supporting text below as a natural lead-in to additional content.
+      Device ID: <%= device.hardwareId %>
+      <br />
+      Model: <%= device.model %>
     </p>
-    <a href="/patient/device/<%= device._id %>" class="btn btn-primary"
-      >View Data</a
+
+    <a href="/patient/readings" class="btn btn-primary">View Data</a>
+
+    <a href="/patient/device/<%= device._id %>" class="btn btn-secondary"
+      >Edit Device Settings</a
     >
   </div>
 </div>
