@@ -21,7 +21,7 @@ const readingSchema = new Schema(
     },
     readingTime: {
       type: Date,
-      required: false, // you’re already treating it as optional
+      required: true, // you’re already treating it as optional
     },
 
     // optional for debugging / raw logs
@@ -30,5 +30,14 @@ const readingSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// Because we just need the readings for a week and no longer
+readingSchema.index(
+  { readingTime: 1 },
+  { expireAfterSeconds: 8 * 24 * 60 * 60 } // 691200 seconds (8 days)
+);
+
+// Standard index for efficient querying by device/time
+readingSchema.index({ device: 1, readingTime: -1 });
 
 module.exports = mongoose.model("Reading", readingSchema);
