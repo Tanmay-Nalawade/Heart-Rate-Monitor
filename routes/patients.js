@@ -210,36 +210,36 @@ router.get("/readings", isLoggedIn, (req, res) => {
   res.render("patient/readings", {});
 });
 
-router.get("/readings/data", isLoggedIn, async (req, res) => {
-  try {
-    if (!req.user) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Not authenticated" });
-    }
+// router.get("/readings/data", isLoggedIn, async (req, res) => {
+//   try {
+//     if (!req.user) {
+//       return res
+//         .status(401)
+//         .json({ success: false, message: "Not authenticated" });
+//     }
 
-    // Find all devices owned by this patient
-    const devices = await Device.find({ owner: req.user._id }).select("_id");
-    const deviceIds = devices.map((d) => d._id);
+//     // Find all devices owned by this patient
+//     const devices = await Device.find({ owner: req.user._id }).select("_id");
+//     const deviceIds = devices.map((d) => d._id);
 
-    // Get recent readings for those devices (oldest → newest)
-    const readings = await Reading.find({ device: { $in: deviceIds } })
-      .sort({ readingTime: 1 })
-      .limit(300); // tweak as you like
+//     // Get recent readings for those devices (oldest → newest)
+//     const readings = await Reading.find({ device: { $in: deviceIds } })
+//       .sort({ readingTime: 1 })
+//       .limit(300); // tweak as you like
 
-    res.json({
-      success: true,
-      readings: readings.map((r) => ({
-        heartRate: Number(r.heartRate),
-        spo2: Number(r.spo2),
-        readingTime: r.readingTime,
-      })),
-    });
-  } catch (err) {
-    console.error("Error fetching readings:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
+//     res.json({
+//       success: true,
+//       readings: readings.map((r) => ({
+//         heartRate: Number(r.heartRate),
+//         spo2: Number(r.spo2),
+//         readingTime: r.readingTime,
+//       })),
+//     });
+//   } catch (err) {
+//     console.error("Error fetching readings:", err);
+//     res.status(500).json({ success: false, message: "Server error" });
+//   }
+// });
 
 // Assuming this is inside a patient-specific router that handles authentication
 
@@ -254,8 +254,11 @@ function getDateRange(dateString) {
 }
 
 // Route 1: Detailed Daily View
-router.get("/readings/daily", isLoggedIn, isPatient, async (req, res) => {
-  try {
+router.get(
+  "/readings/daily",
+  isLoggedIn,
+  isPatient,
+  catchAsync(async (req, res) => {
     if (!req.user || req.user.role !== "patient") {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -295,15 +298,15 @@ router.get("/readings/daily", isLoggedIn, isPatient, async (req, res) => {
       success: true,
       data: { heartRate: hrData, spo2: spo2Data },
     });
-  } catch (err) {
-    console.error("Error fetching daily readings:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
+  })
+);
 
 // Route 2: Weekly Summary View
-router.get("/readings/summary", isLoggedIn, isPatient, async (req, res) => {
-  try {
+router.get(
+  "/readings/summary",
+  isLoggedIn,
+  isPatient,
+  catchAsync(async (req, res) => {
     if (!req.user || req.user.role !== "patient") {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -355,10 +358,7 @@ router.get("/readings/summary", isLoggedIn, isPatient, async (req, res) => {
         },
       },
     });
-  } catch (err) {
-    console.error("Error fetching summary readings:", err);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
+  })
+);
 
 module.exports = router;
