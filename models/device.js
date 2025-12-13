@@ -1,16 +1,17 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const DeviceSchema = new Schema({
+const DeviceSchema = new Schema(
+  {
     owner: {
       type: Schema.Types.ObjectId,
-      ref: "Patient",        // belongs to a Patient
+      ref: "Patient", // belongs to a Patient
       required: true,
     },
     hardwareId: {
       type: String,
       required: true,
-      unique: true,          // Particle device ID
+      unique: true, // Particle device ID
       trim: true,
     },
     label: {
@@ -27,6 +28,22 @@ const DeviceSchema = new Schema({
       default: true,
     },
     lastSeenAt: Date,
+    // for user defined measurement requirements
+    measurementConfig: {
+      startTime: {
+        type: String, // Stored as "HH:MM" (e.g., "08:00")
+        default: "08:00",
+      },
+      endTime: {
+        type: String, // Stored as "HH:MM" (e.g., "22:00")
+        default: "22:00",
+      },
+      frequencyMinutes: {
+        type: Number, // Interval in minutes (e.g., 30, 60)
+        min: 5,
+        default: 60,
+      },
+    },
   },
   { timestamps: true }
 );
