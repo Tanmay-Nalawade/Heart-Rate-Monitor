@@ -27,7 +27,7 @@ const DeviceSchema = new Schema(
     measurementConfig: {
       startTime: {
         type: String, // Stored as "HH:MM" (e.g., "08:00")
-        default: "08:00",
+        default: "06:00",
       },
       endTime: {
         type: String, // Stored as "HH:MM" (e.g., "22:00")
@@ -36,9 +36,10 @@ const DeviceSchema = new Schema(
       frequencyMinutes: {
         type: Number, // Interval in minutes (e.g., 30, 60)
         min: 5,
-        default: 60,
+        default: 30,
       },
     },
+    lastSuccessfulPost: Date,
   },
   { timestamps: true }
 );
