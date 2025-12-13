@@ -9,11 +9,6 @@ const readingSchema = new Schema(
       ref: "Device",
       required: true,
     },
-    patient: {
-      type: Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
-    },
     heartRate: {
       type: Number,
       required: true,

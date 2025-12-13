@@ -16,53 +16,72 @@ const {
 router.use(isLoggedIn, isPatient);
 
 // Show all the devices
-router.get(
-  "/dashboard",
-  catchAsync(async (req, res) => {
-    const userDeviceIds = req.user.devices;
-    const patient_devices = await Device.find({ _id: { $in: userDeviceIds } });
-    res.render("patient/dashboard", {
-      patient_devices,
-      page_css: null,
-      page_script: null,
+router
+  .route("/dashboard")
+  .get(
+    catchAsync(async (req, res) => {
+      const userDeviceIds = req.user.devices;
+      const patient_devices = await Device.find({
+        _id: { $in: userDeviceIds },
+      });
+      res.render("patient/dashboard", {
+        patient_devices,
+        page_css: null,
+        page_script: null,
+      });
+    })
+  )
+  .post(
+    validateDevice,
+    catchAsync(async (req, res) => {
+      // Saving the new device with owner set to logged-in patient
+      const device = new Device({
+        ...req.body.device,
+        owner: req.user._id,
+      });
+      await device.save();
+      // link new device ID to the logged-in patient
+      req.user.devices.push(device._id);
+      await req.user.save();
+      req.flash("success", "A new Device was added Successfully");
+      res.redirect(`/patient/device/${device._id}`);
+    })
+  );
+
+router
+  .route("/account_info")
+  .get(isLoggedIn, isPatient, (req, res) => {
+    res.render("patient/account_info", {
+      currentUser: req.user,
     });
   })
-);
+  .post(
+    isLoggedIn,
+    isPatient,
+    catchAsync(async (req, res) => {
+      const patientId = req.user._id;
+      const { name, dob, phone, emergencyContactName, emergencyContactPhone } =
+        req.body;
 
-router.get("/account_info", isLoggedIn, isPatient, (req, res) => {
-  res.render("patient/account_info", {
-    currentUser: req.user,
-  });
-});
+      const updateFields = {
+        $set: {
+          name,
+          dob,
+          phone,
+          emergencyContactName,
+          emergencyContactPhone,
+        },
+      };
 
-router.post(
-  "/accountInfo",
-  isLoggedIn,
-  isPatient,
-  catchAsync(async (req, res) => {
-    const patientId = req.user._id;
-    const { name, dob, phone, emergencyContactName, emergencyContactPhone } =
-      req.body;
+      await Patient.findByIdAndUpdate(patientId, updateFields);
 
-    const updateFields = {
-      $set: {
-        name,
-        dob,
-        phone,
-        emergencyContactName,
-        emergencyContactPhone,
-      },
-    };
-
-    await Patient.findByIdAndUpdate(patientId, updateFields);
-
-    req.flash(
-      "success",
-      "Your Account Information has been updated successfully!"
-    );
-    res.redirect("/patient/dashboard");
-  })
-);
+      req.flash(
+        "success",
+        "Your Account Information has been updated successfully!"
+      );
+      res.redirect("/patient/dashboard");
+    })
+  );
 
 // Creating/Adding a new device
 router.get("/device/new", async (req, res) => {
@@ -73,24 +92,6 @@ router.get("/device/new", async (req, res) => {
     page_script: null,
   });
 });
-
-router.post(
-  "/dashboard",
-  validateDevice,
-  catchAsync(async (req, res) => {
-    // Saving the new device with owner set to logged-in patient
-    const device = new Device({
-      ...req.body.device,
-      owner: req.user._id,
-    });
-    await device.save();
-    // link new device ID to the logged-in patient
-    req.user.devices.push(device._id);
-    await req.user.save();
-    req.flash("success", "A new Device was added Successfully");
-    res.redirect(`/patient/device/${device._id}`);
-  })
-);
 
 // Edit/Update the info present on device
 router.get(
