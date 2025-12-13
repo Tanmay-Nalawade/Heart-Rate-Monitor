@@ -67,6 +67,8 @@ router
 
 router.get(
   "/dashboard",
+  isLoggedIn,
+  isPhysician,
   catchAsync(async (req, res) => {
     const patientIds = req.user.patients;
     const patients = await Patient.find({ _id: { $in: patientIds } });
