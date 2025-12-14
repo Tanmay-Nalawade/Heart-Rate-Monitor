@@ -5,6 +5,9 @@
     <h1 class="text-primary">My Health Data</h1>
 
     <div class="d-flex gap-3">
+      <a href="/patient/device/<%= deviceId %>/edit" class="btn btn-warning">
+        <i class="fas fa-cog me-2"></i> Edit Device Settings
+      </a>
       <select id="viewSelector" class="form-select w-auto">
         <option value="detailed">Detailed Daily View</option>
         <option value="summary">Weekly Summary</option>
