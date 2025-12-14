@@ -207,8 +207,9 @@ router.delete(
     res.redirect("/physician");
   })
 );
-router.get("/readings", isLoggedIn, (req, res) => {
-  res.render("patient/readings", {});
+router.get("/readings/:id", isLoggedIn, isPatient, (req, res) => {
+  const deviceId = req.params.id;
+  res.render("patient/readings", { deviceId });
 });
 
 // router.get("/readings/data", isLoggedIn, async (req, res) => {
@@ -256,7 +257,7 @@ function getDateRange(dateString) {
 
 // Route 1: Detailed Daily View
 router.get(
-  "/readings/daily",
+  "/readings/:id/daily",
   isLoggedIn,
   catchAsync(async (req, res) => {
     if (!req.user || req.user.role !== "patient") {
@@ -303,7 +304,7 @@ router.get(
 
 // Route 2: Weekly Summary View
 router.get(
-  "/readings/summary",
+  "/readings/:id/summary",
   isLoggedIn,
   catchAsync(async (req, res) => {
     if (!req.user || req.user.role !== "patient") {

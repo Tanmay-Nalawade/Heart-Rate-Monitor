@@ -24,7 +24,9 @@
       Model: <%= device.model %>
     </p>
 
-    <a href="/patient/readings" class="btn btn-primary">View Data</a>
+    <a href="/patient/readings/<%= device._id %>" class="btn btn-primary"
+      >View Data</a
+    >
 
     <a href="/patient/device/<%= device._id %>/edit" class="btn btn-secondary"
       >Edit Device Settings</a
