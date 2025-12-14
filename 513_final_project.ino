@@ -8,7 +8,7 @@ SYSTEM_THREAD(ENABLED);
 
 MAX30105 particleSensor;
 
-// Number of samples per measurement
+// ====================== Measurement Buffers ======================
 const int MAX_READINGS = 100;
 uint32_t irBuffer[MAX_READINGS];
 uint32_t redBuffer[MAX_READINGS];
@@ -18,24 +18,60 @@ int8_t  validSPO2;
 int32_t heartRate;
 int8_t  validHeartRate;
 
-// Fixed schedule for milestone
-// TESTING: 30 minutes.
-// For testing use 30 seconds
-// const unsigned long MEAS_INTERVAL_MS  = 30UL * 60UL * 1000UL; // 30 minutes (real)
-const unsigned long MEAS_INTERVAL_MS  = 30000; // 30 seconds for testing
+// ====================== API / Identification ======================
+const char* API_KEY = "YOUR_SECRET_KEY";   // TODO: replace with real key
+String hardwareId;                         // Particle device ID (hardwareId in DB)
 
+// ====================== Timing Settings ======================
+// For testing: 30 seconds. For production (spec), change to 30 minutes.
+const unsigned long MEAS_INTERVAL_MS  = 30000;                 // 30 seconds (testing)
+// const unsigned long MEAS_INTERVAL_MS  = 30UL * 60UL * 1000UL;  // 30 minutes (production)
 
 const unsigned long PROMPT_TIMEOUT_MS = 5UL * 60UL * 1000UL;   // 5 minutes
-
 unsigned long lastMeasurementTime = 0;
 
-// Function declarations
+// Periodic background check for uploading offline data
+const unsigned long OFFLINE_CHECK_INTERVAL_MS = 60UL * 1000UL; // every 1 minute
+unsigned long lastOfflineUploadCheck = 0;
+
+// Maximum age for offline measurements (24 hours, in seconds)
+const uint32_t MAX_OFFLINE_AGE_SEC = 24UL * 60UL * 60UL;       // 24 hours
+
+// ====================== Time-of-day window (configurable) ======================
+int measurementStartHour = 6;   // inclusive, default 6:00
+int measurementEndHour   = 22;  // exclusive, default 22:00
+
+int setMeasurementWindow(String command);   // "start,end", e.g. "6,22"
+
+// ====================== Offline Storage (EEPROM) ======================
+struct StoredMeasurement {
+    uint32_t timestamp;   // Unix time when measurement was taken (0 = unknown)
+    float spo2;
+    float heartRate;
+};
+
+const int MAX_STORED = 32;                                    // up to 32 offline records
+const int EEPROM_START = 0;                                   // base address in EEPROM
+const int EEPROM_COUNT_ADDR = EEPROM_START + MAX_STORED * sizeof(StoredMeasurement);
+
+int storedCount = 0;                                          // number of stored records
+
+// ====================== Function Declarations ======================
 void takeMeasurement(int32_t *spo2Out, int32_t *hrOut);
 bool fingerOnSensor();
+
 void flashBluePrompt();
 void flashGreenOK();
+void flashYellowOffline();
 void flashErrorPurple();
 
+void loadOfflineMetadata();
+void saveOfflineCount();
+void saveOfflineMeasurement(float spo2Val, float hrVal);
+void clearOfflineStorage();
+void uploadOfflineMeasurementsIfOnline();
+
+// ====================== Setup ======================
 void setup() {
     Serial.begin(115200);
     // Wait up to 10 seconds so the PC serial monitor can attach
@@ -44,7 +80,22 @@ void setup() {
     RGB.control(true);
     pinMode(D7, OUTPUT);
 
-    // Initialize sensor
+    // Identification
+    hardwareId = System.deviceID();
+    Serial.printlnf("Hardware ID (use this as hardwareId when registering): %s",
+                    hardwareId.c_str());
+
+    // Time zone (optional, helpful for debugging)
+    Time.zone(-7); // Example: Arizona (UTC-7)
+
+    // Particle function to configure measurement window from the web app
+    // Example payload: "6,22" for measurements between 6:00 and 22:00
+    Particle.function("setWindow", setMeasurementWindow);
+
+    // Load offline metadata (how many records are in EEPROM)
+    loadOfflineMetadata();
+
+    // Initialize MAX30105 sensor over I2C
     if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
         Serial.println("MAX30105 not found! Check wiring and power.");
         flashErrorPurple();      // Blink purple forever to show error
@@ -58,68 +109,122 @@ void setup() {
     particleSensor.setPulseAmplitudeRed(0x0A);   // Low red brightness
     particleSensor.setPulseAmplitudeGreen(0x00); // Turn off green LED
 
-    Serial.println("HeartTrack Milestone firmware ready.");
+    Serial.println("HeartTrack firmware with offline storage ready.");
     Serial.println("Device will ask for a measurement on a fixed schedule.");
 
     // Force the first measurement to happen soon after boot
     lastMeasurementTime = millis() - MEAS_INTERVAL_MS;
 }
 
+// ====================== Main Loop (simple synchronous flow) ======================
 void loop() {
     unsigned long now = millis();
 
-    // Time to request a new measurement
+    // 1) Periodic measurement trigger (respecting time-of-day window)
     if (now - lastMeasurementTime >= MEAS_INTERVAL_MS) {
+
+        // Check whether we are inside the configured time window
+        bool inWindow = true;
+        if (Time.isValid()) {
+            int h = Time.hour();
+            inWindow = (h >= measurementStartHour && h < measurementEndHour);
+        }
+        if (!inWindow) {
+            // Outside time window: reset the anchor and skip this cycle
+            lastMeasurementTime = now;
+            return;
+        }
+
+        // Update anchor time at the beginning of this cycle
+        lastMeasurementTime = now;
+
         Serial.println("\n=== Time for a new measurement ===");
         Serial.println("Please place your finger on the sensor.");
 
         unsigned long promptStart = millis();
 
-        // During this window, blink blue and wait for the user
+        // Prompt the user and wait for finger (up to PROMPT_TIMEOUT_MS)
         while (millis() - promptStart < PROMPT_TIMEOUT_MS) {
-            flashBluePrompt();          // Blue LED prompt
+            flashBluePrompt();          // Blue LED prompt + D7 LED
 
-            // Check if finger is on the sensor (look at IR strength)
+            // Check if finger is on the sensor (based on IR intensity)
             if (fingerOnSensor()) {
                 Serial.println("Finger detected. Measuring now...");
 
+                // Collect samples and run the MAXIM algorithm
                 takeMeasurement(&spo2, &heartRate);
 
                 Serial.printf("Result: SpO2 = %ld, HR = %ld\r\n", spo2, heartRate);
 
-                // Send to server: event name HeartTrack, JSON payload
-                String payload = String::format(
-                    "{\"spo2\":%ld,\"heartRate\":%ld}", spo2, heartRate
-                );
-                Particle.publish("HeartTrack", payload, PRIVATE);
+                float spo2Val      = (float)spo2;
+                float heartRateVal = (float)heartRate;
 
-                flashGreenOK();         // Green LED = measurement done
+                // Prepare timestamp for this measurement
+                uint32_t ts = (uint32_t) Time.now();  // may be 0 if time is not yet valid
 
-                lastMeasurementTime = millis();  // Reset the schedule
-                return;                           // End this loop iteration
+                // ================== Wi-Fi / offline logic START ==================
+                if (WiFi.ready() && Particle.connected()) {
+                    // Online: first upload offline data (last 24h), then publish current
+                    Serial.println("Wi-Fi is ready. Uploading any offline measurements first (if any)...");
+                    uploadOfflineMeasurementsIfOnline();    // enforces 24h retention
+
+                    Serial.println("Publishing current measurement...");
+                    String payload = String::format(
+                        "{\"apiKey\":\"%s\",\"hardwareId\":\"%s\","
+                        "\"spo2\":%.2f,\"heartRate\":%.2f,\"timestamp\":%lu}",
+                        API_KEY,
+                        hardwareId.c_str(),
+                        spo2Val,
+                        heartRateVal,
+                        (unsigned long)ts
+                    );
+                    Particle.publish("HeartTrack", payload, PRIVATE);
+                    flashGreenOK();     // Green LED = uploaded successfully
+                } else {
+                    // Offline: store locally and flash yellow
+                    Serial.println("Wi-Fi NOT ready. Storing measurement offline (EEPROM).");
+                    saveOfflineMeasurement(spo2Val, heartRateVal);
+                    flashYellowOffline();
+                }
+                // ================== Wi-Fi / offline logic END ====================
+
+                // End this loop iteration after a successful measurement (online or offline)
+                return;
             }
         }
 
-        // Timed out (no finger detected)
+        // If we get here, the user never put a finger on the sensor in 5 minutes
         Serial.println("Measurement timed out (no finger detected).");
-        lastMeasurementTime = millis();  // Start a new interval
+
+        // Do nothing else in this iteration; wait for the next interval
+        return;
     }
+
+    // 2) Periodically attempt to upload offline measurements when online
+    if (WiFi.ready() && Particle.connected() &&
+        (millis() - lastOfflineUploadCheck >= OFFLINE_CHECK_INTERVAL_MS)) {
+
+        uploadOfflineMeasurementsIfOnline();
+        lastOfflineUploadCheck = millis();
+    }
+
+    // Otherwise, idle. System thread keeps Wi-Fi / cloud alive.
 }
 
-// Check once if a finger is present based on IR intensity
+// ====================== Finger Detection ======================
 bool fingerOnSensor() {
     particleSensor.check();
     if (particleSensor.available()) {
         long ir = particleSensor.getIR();
         particleSensor.nextSample();
 
-        // Threshold can be tuned; with a finger, IR is usually much higher
+        // Threshold can be tuned; with a finger, IR is usually much higher.
         return ir > 50000;
     }
     return false;
 }
 
-// Collect MAX_READINGS samples and compute SpO2 + HR
+// ====================== Active Measurement ======================
 void takeMeasurement(int32_t *spo2Out, int32_t *hrOut) {
     for (int i = 0; i < MAX_READINGS; i++) {
         while (!particleSensor.available()) {
@@ -131,7 +236,7 @@ void takeMeasurement(int32_t *spo2Out, int32_t *hrOut) {
         particleSensor.nextSample();
     }
 
-    // Call the official algorithm
+    // Call the official MAXIM algorithm
     maxim_heart_rate_and_oxygen_saturation(
         irBuffer, MAX_READINGS,
         redBuffer,
@@ -144,7 +249,7 @@ void takeMeasurement(int32_t *spo2Out, int32_t *hrOut) {
     }
 }
 
-// Blue LED prompt (and on-board D7 LED)
+// ====================== LED Helpers ======================
 void flashBluePrompt() {
     digitalWrite(D7, HIGH);
     RGB.color(0, 0, 255);   // Blue
@@ -154,7 +259,6 @@ void flashBluePrompt() {
     delay(200);
 }
 
-// Measurement success: blink green a few times
 void flashGreenOK() {
     for (int i = 0; i < 3; i++) {
         RGB.color(0, 255, 0); // Green
@@ -164,7 +268,15 @@ void flashGreenOK() {
     }
 }
 
-// Sensor not found: blink purple forever
+void flashYellowOffline() {
+    for (int i = 0; i < 3; i++) {
+        RGB.color(255, 255, 0); // Yellow
+        delay(200);
+        RGB.color(0, 0, 0);
+        delay(200);
+    }
+}
+
 void flashErrorPurple() {
     while (true) {
         RGB.color(255, 0, 255); // Purple
@@ -172,4 +284,163 @@ void flashErrorPurple() {
         RGB.color(0, 0, 0);
         delay(300);
     }
+}
+
+// ====================== Offline Storage (EEPROM) ======================
+
+// Load storedCount from EEPROM (called in setup)
+void loadOfflineMetadata() {
+    EEPROM.get(EEPROM_COUNT_ADDR, storedCount);
+    if (storedCount < 0 || storedCount > MAX_STORED) {
+        storedCount = 0;
+    }
+    Serial.printlnf("Offline measurements stored in EEPROM: %d", storedCount);
+}
+
+// Save storedCount to EEPROM
+void saveOfflineCount() {
+    EEPROM.put(EEPROM_COUNT_ADDR, storedCount);
+}
+
+// Save a single measurement into EEPROM
+void saveOfflineMeasurement(float spo2Val, float hrVal) {
+    if (storedCount >= MAX_STORED) {
+        Serial.println("Offline storage FULL, dropping newest measurement.");
+        return;
+    }
+
+    StoredMeasurement m;
+    m.spo2      = spo2Val;
+    m.heartRate = hrVal;
+
+    // Store the current system time when the measurement is taken.
+    // If the clock is not valid yet, this may be 0 or a bogus value,
+    // but we will still keep it and handle it during upload.
+    m.timestamp = (uint32_t) Time.now();
+
+    int addr = EEPROM_START + storedCount * sizeof(StoredMeasurement);
+    EEPROM.put(addr, m);
+
+    storedCount++;
+    saveOfflineCount();
+
+    Serial.printlnf("Offline measurement saved. Count = %d", storedCount);
+}
+
+// Clear all offline records in EEPROM
+void clearOfflineStorage() {
+    Serial.println("Clearing all offline measurements from EEPROM...");
+
+    StoredMeasurement blank;
+    blank.timestamp = 0;
+    blank.spo2      = 0.0f;
+    blank.heartRate = 0.0f;
+
+    for (int i = 0; i < storedCount; i++) {
+        int addr = EEPROM_START + i * sizeof(StoredMeasurement);
+        EEPROM.put(addr, blank);
+    }
+
+    storedCount = 0;
+    saveOfflineCount();
+}
+
+// When online, upload any offline measurements stored in EEPROM
+void uploadOfflineMeasurementsIfOnline() {
+    if (storedCount <= 0) {
+        return; // nothing to upload
+    }
+
+    // Double-check we really are online
+    if (!WiFi.ready() || !Particle.connected()) {
+        Serial.println("Wi-Fi or cloud not ready yet, skip offline upload this time.");
+        return;
+    }
+
+    if (!Time.isValid()) {
+        Serial.println("Time not valid, uploading offline measurements anyway (no 24h pruning).");
+    }
+
+    Serial.printlnf("Uploading %d offline measurements...", storedCount);
+
+    time_t nowTs = Time.now();
+    bool allOk = true;
+
+    for (int i = 0; i < storedCount; i++) {
+        int addr = EEPROM_START + i * sizeof(StoredMeasurement);
+        StoredMeasurement m;
+        EEPROM.get(addr, m);
+
+        // Apply 24-hour retention only if we have a trusted timestamp
+        if (Time.isValid() && m.timestamp != 0 && nowTs >= (time_t)m.timestamp) {
+            time_t age = nowTs - (time_t)m.timestamp;
+            if (age > (time_t)MAX_OFFLINE_AGE_SEC) {
+                Serial.printlnf("Skipping stale offline measurement (age: %ld sec)",
+                                (long)age);
+                continue;
+            }
+        }
+
+        // Decide which timestamp to send:
+        // - if the stored timestamp is non-zero, use it
+        // - otherwise, fall back to the current time (or 0 if time not valid)
+        uint32_t sendTs;
+        if (m.timestamp != 0) {
+            sendTs = m.timestamp;
+        } else if (Time.isValid()) {
+            sendTs = (uint32_t) nowTs;
+        } else {
+            sendTs = 0;
+        }
+
+        String payload = String::format(
+            "{\"apiKey\":\"%s\",\"hardwareId\":\"%s\","
+            "\"spo2\":%.2f,\"heartRate\":%.2f,\"timestamp\":%lu}",
+            API_KEY,
+            hardwareId.c_str(),
+            m.spo2,
+            m.heartRate,
+            (unsigned long)sendTs
+        );
+
+        Serial.printlnf("Publishing offline measurement %d...", i + 1);
+        bool ok = Particle.publish("HeartTrack", payload, PRIVATE);
+        Serial.printlnf("  -> publish %s", ok ? "OK" : "FAILED");
+
+        if (!ok) {
+            allOk = false;
+        }
+
+        delay(2000); // avoid rate limiting
+    }
+
+    // Only clear EEPROM if all publishes succeeded
+    if (allOk) {
+        clearOfflineStorage();
+    } else {
+        Serial.println("Some offline publishes failed, keeping EEPROM data for retry.");
+    }
+}
+
+// ====================== Config Function (time window) ======================
+// command format: "startHour,endHour", e.g. "6,22"
+int setMeasurementWindow(String command) {
+    int comma = command.indexOf(',');
+    if (comma < 0) {
+        return -1;  // invalid format
+    }
+
+    int startH = command.substring(0, comma).toInt();
+    int endH   = command.substring(comma + 1).toInt();
+
+    if (startH < 0 || startH > 23 || endH < 1 || endH > 24) {
+        return -2;  // out of range
+    }
+
+    measurementStartHour = startH;
+    measurementEndHour   = endH;
+
+    Serial.printlnf("Updated measurement window to [%d:00, %d:00).",
+                    measurementStartHour, measurementEndHour);
+    return 1;
 }
