@@ -39,7 +39,7 @@ loadDetailedData(datePicker.value);
 // --- FUNCTION: LOAD WEEKLY SUMMARY ---
 async function loadSummaryData() {
   try {
-    const res = await fetch("/patient/readings/summary");
+    const res = await fetch(`/patient/readings/${CURRENT_DEVICE_ID}/summary`);
     const data = await res.json();
 
     if (data.success && data.summary) {
@@ -66,7 +66,9 @@ async function loadSummaryData() {
 // --- FUNCTION: LOAD DETAILED CHARTS ---
 async function loadDetailedData(dateString) {
   try {
-    const res = await fetch(`/patient/readings/daily?date=${dateString}`);
+    const res = await fetch(
+      `/patient/readings/${CURRENT_DEVICE_ID}/daily?date=${dateString}`
+    );
     const json = await res.json();
 
     if (json.success) {
