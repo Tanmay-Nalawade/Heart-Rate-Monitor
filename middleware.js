@@ -97,6 +97,51 @@ module.exports.isPhysician = (req, res, next) => {
 };
 
 // To validate if either device owner or the assignedPhysician
+module.exports.canViewDeviceData = async (req, res, next) => {
+  const { id } = req.params; // Assumes URL is like /devices/:id
+
+  // 1. Find the Patient who owns this device
+  // Since Device doesn't have an owner field, we look for the Patient
+  // whose 'devices' array contains this Device ID.
+  const patientOwner = await Patient.findOne({ devices: id });
+
+  if (!patientOwner) {
+    req.flash("error", "Device is not linked to any patient.");
+    // Redirect based on role to avoid dead ends
+    const redirectUrl =
+      req.user.role === "physician"
+        ? "/physician/dashboard"
+        : "/patient/dashboard";
+    return res.redirect(redirectUrl);
+  }
+
+  // 2. CHECK: Is the current user the Patient who owns the device?
+  if (req.user.role === "patient" && patientOwner._id.equals(req.user._id)) {
+    return next();
+  }
+
+  // 3. CHECK: Is the current user a Physician assigned to this Patient?
+  if (req.user.role === "physician") {
+    const isAssigned = patientOwner.assignedPhysicians.some((physicianId) =>
+      physicianId.equals(req.user._id)
+    );
+
+    if (isAssigned) {
+      return next();
+    }
+  }
+
+  // 4. Deny Access
+  req.flash(
+    "error",
+    "You do not have permission to view data for this device."
+  );
+  return res.redirect(
+    req.user.role === "physician"
+      ? "/physician/dashboard"
+      : "/patient/dashboard"
+  );
+};
 
 // Middleware to validate the physician profile completion data
 module.exports.validatePhysicianProfile = (req, res, next) => {
