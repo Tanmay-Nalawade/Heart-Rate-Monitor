@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Device = require("../models/device");
 const Patient = require("../models/patient");
 const Physician = require("../models/physician");
@@ -11,7 +12,7 @@ const {
   validateDevice,
   isPatient,
   isAssignedPhysician,
-  isPatientOrAssignedPhysician,
+  canViewDeviceData,
 } = require("../middleware");
 
 router.use(isLoggedIn, isPatient);
@@ -207,10 +208,41 @@ router.delete(
     res.redirect("/physician");
   })
 );
-router.get("/readings/:id", isLoggedIn, isPatient, (req, res) => {
-  const deviceId = req.params.id;
-  res.render("patient/readings", { deviceId });
-});
+router.get(
+  "/readings/:id",
+  isLoggedIn,
+  catchAsync(async (req, res) => {
+    const deviceId = req.params.id;
+    const dateRange = await Reading.aggregate([
+      { $match: { device: new mongoose.Types.ObjectId(deviceId) } },
+      {
+        $group: {
+          _id: null,
+          // Find the latest date (the new default date)
+          latestReadingDate: { $max: "$readingTime" },
+          // Find the earliest date
+          earliestReadingDate: { $min: "$readingTime" },
+        },
+      },
+    ]);
+    // Extract the dates, converting Date objects to simple date strings
+    const latestDate =
+      dateRange.length > 0 && dateRange[0].latestReadingDate
+        ? dateRange[0].latestReadingDate.toISOString().split("T")[0] // 'YYYY-MM-DD'
+        : new Date().toISOString().split("T")[0]; // Default to today
+
+    const earliestDate =
+      dateRange.length > 0 && dateRange[0].earliestReadingDate
+        ? dateRange[0].earliestReadingDate.toISOString().split("T")[0]
+        : latestDate;
+
+    res.render("patient/readings", {
+      deviceId: deviceId,
+      latestReadingDate: latestDate, // Pass the latest date for default
+      earliestReadingDate: earliestDate, // Pass the earliest date for the message
+    });
+  })
+);
 
 // router.get("/readings/data", isLoggedIn, async (req, res) => {
 //   try {

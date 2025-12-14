@@ -4,8 +4,20 @@ const datePicker = document.getElementById("datePicker");
 const summarySection = document.getElementById("summarySection");
 const detailedSection = document.getElementById("detailedSection");
 
-// Set Date Picker to Today
-datePicker.valueAsDate = new Date();
+// 1. Safety Check: Ensure the device ID is available before proceeding.
+if (!CURRENT_DEVICE_ID) {
+  console.error("Initialization failed: Device ID is not available.");
+  // Optionally display an error message on the screen here
+  // return; // Uncomment to stop execution if the ID is critical and missing
+}
+
+// 2. Set Date Picker to LATEST_READING_DATE (Passed from EJS template)
+if (LATEST_READING_DATE && LATEST_READING_DATE !== "null") {
+  datePicker.value = LATEST_READING_DATE; // Use value since it's already 'YYYY-MM-DD' string
+} else {
+  // Fallback to today if no date was found
+  datePicker.valueAsDate = new Date();
+}
 
 // Chart Instances (to destroy/recreate later)
 let heartRateChartInstance = null;
