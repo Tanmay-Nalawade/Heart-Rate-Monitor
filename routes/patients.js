@@ -148,7 +148,7 @@ router.put(
       { new: true, runValidators: true }
     );
     req.flash("success", "Successfully Updated device Info");
-    res.redirect(`/patient/device/${device._id}`);
+    res.redirect(`/patient/device/${updatedDevice._id}/edit`);
   })
 );
 
