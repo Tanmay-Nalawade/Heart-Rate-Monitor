@@ -17,7 +17,6 @@ const upload = multer({
     s3: s3Client, // Pass the correct S3Client instance
     bucket: process.env.AWS_BUCKET_NAME,
     contentType: multerS3.AUTO_CONTENT_TYPE,
-    acl: "public-read",
     key: function (req, file, cb) {
       cb(
         null,
