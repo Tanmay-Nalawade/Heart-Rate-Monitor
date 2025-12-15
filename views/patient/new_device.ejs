@@ -1,43 +1,44 @@
 <% layout('layouts/bootstrap')%>
 
-<div class="container py-5">
-  <div class="row w-100">
-    <div>
-      <div class="card shadow-lg">
-        <div class="card-header bg-success text-white text-center">
-          <h1 class="h3 mb-0">Register New Health Monitoring Device</h1>
+<div class="container py-5 w-100">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-10">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-success text-white text-center py-3">
+          <h1 class="h4 mb-0">
+            <i class="fas fa-microchip me-2"></i>Register New Device
+          </h1>
         </div>
-        <div class="card-body">
+
+        <div class="card-body p-4">
           <form
             action="/patient/dashboard"
             method="POST"
             class="validated-form"
             novalidate
           >
-            <h5 class="mt-2 mb-3 border-bottom pb-2 text-primary">
+            <h5 class="mb-3 border-bottom pb-2 text-primary">
               Device Identification
             </h5>
 
             <div class="mb-3">
-              <label for="hardwareId" class="form-label">
+              <label for="hardwareId" class="form-label fw-bold">
                 Hardware ID (Particle Device ID)
               </label>
               <input
                 type="text"
-                class="form-control"
+                class="form-control form-control-lg"
                 id="hardwareId"
                 name="device[hardwareId]"
                 placeholder="e.g., 2d001e00..."
                 required
               />
-              <div class="form-text">
-                This is the unique ID found on the hardware module.
-              </div>
+              <div class="form-text">Found on the hardware module sticker.</div>
             </div>
 
             <div class="mb-3">
-              <label for="label" class="form-label"
-                >Device Nickname/Label</label
+              <label for="label" class="form-label fw-bold"
+                >Device Nickname</label
               >
               <input
                 type="text"
@@ -49,8 +50,8 @@
               />
             </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
                 <label for="model" class="form-label">Model Name</label>
                 <input
                   type="text"
@@ -61,10 +62,10 @@
                   required
                 />
               </div>
-              <div class="col-md-6 mb-3">
-                <label for="firmwareVersion" class="form-label"
-                  >Firmware Version</label
-                >
+              <div class="col-12 col-md-6">
+                <label for="firmwareVersion" class="form-label">
+                  Firmware Version
+                </label>
                 <input
                   type="text"
                   class="form-control"
@@ -76,7 +77,7 @@
               </div>
             </div>
 
-            <div class="form-check form-switch mb-3">
+            <div class="form-check form-switch my-4">
               <input
                 class="form-check-input"
                 type="checkbox"
@@ -86,17 +87,17 @@
                 checked
               />
               <label class="form-check-label" for="isActive">
-                Activate Device Upon Registration
+                Activate Device Immediately
               </label>
             </div>
 
             <h5 class="mt-4 mb-3 border-bottom pb-2 text-primary">
-              Initial Measurement Schedule
+              Measurement Settings
             </h5>
 
             <div class="mb-3">
-              <label for="frequency" class="form-label">
-                Measurement Frequency (Minutes)
+              <label for="frequency" class="form-label fw-bold">
+                Frequency (Minutes)
               </label>
               <input
                 type="number"
@@ -107,14 +108,10 @@
                 min="5"
                 required
               />
-              <div class="form-text">
-                How often should the device attempt to request data (Min: 5
-                minutes)?
-              </div>
             </div>
 
-            <div class="row mb-4">
-              <div class="col-md-6">
+            <div class="row g-3 mb-4">
+              <div class="col-6">
                 <label for="startTime" class="form-label">Start Time</label>
                 <input
                   type="time"
@@ -125,7 +122,7 @@
                   required
                 />
               </div>
-              <div class="col-md-6">
+              <div class="col-6">
                 <label for="endTime" class="form-label">End Time</label>
                 <input
                   type="time"
@@ -138,16 +135,16 @@
               </div>
             </div>
 
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-              <button class="btn btn-success btn-lg">
-                <i class="fas fa-plus-circle me-2"></i> Add Device
-              </button>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
               <a
                 href="/patient/dashboard"
-                class="btn btn-outline-secondary btn-lg"
+                class="btn btn-outline-secondary btn-lg order-2 order-md-1"
               >
-                <i class="fas fa-arrow-left me-2"></i> Cancel
+                Cancel
               </a>
+              <button class="btn btn-success btn-lg order-1 order-md-2">
+                <i class="fas fa-plus-circle me-2"></i> Register Device
+              </button>
             </div>
           </form>
         </div>
