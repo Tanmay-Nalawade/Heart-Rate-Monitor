@@ -9,6 +9,10 @@ const DeviceSchema = new Schema(
       unique: true, // Particle device ID
       trim: true,
     },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "Patient",
+    },
     label: {
       type: String,
       default: "My HeartTrack Device",
