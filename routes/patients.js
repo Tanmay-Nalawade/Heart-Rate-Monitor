@@ -73,8 +73,27 @@ router
       const patient_devices = await Device.find({
         _id: { $in: userDeviceIds },
       });
+
+      // Fetch assigned physicians
+      const currentUser = await Patient.findById(req.user._id).populate(
+        "assignedPhysicians"
+      );
+
+      // Fetch all physicians
+      const allPhysicians = await Physician.find({});
+
+      // Filter to get only unassigned physicians
+      const assignedPhysicianIds = currentUser.assignedPhysicians.map((p) =>
+        p._id.toString()
+      );
+      const availablePhysicians = allPhysicians.filter(
+        (p) => !assignedPhysicianIds.includes(p._id.toString())
+      );
+
       res.render("patient/dashboard", {
         patient_devices,
+        assignedPhysicians: currentUser.assignedPhysicians,
+        availablePhysicians,
       });
     })
   )
