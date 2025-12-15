@@ -398,22 +398,21 @@ router.get(
   "/readings/:id/summary",
   isLoggedIn,
   catchAsync(async (req, res) => {
-    if (!req.user || req.user.role !== "patient") {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
+    const targetDeviceId = req.params.id;
 
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     // 1. Find all device IDs owned by this patient
-    const deviceIds = req.user.devices;
+    const deviceIds = new mongoose.Types.ObjectId(targetDeviceId);
+    const deviceIdsArray = [deviceIds];
 
     // 2. Use MongoDB Aggregation to calculate stats
     const summaryStats = await Reading.aggregate([
       // Stage 1: Filter by patient devices and time window
       {
         $match: {
-          device: { $in: deviceIds },
+          device: { $in: deviceIdsArray },
           readingTime: { $gte: sevenDaysAgo },
         },
       },
