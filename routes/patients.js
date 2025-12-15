@@ -354,10 +354,6 @@ router.get(
   "/readings/:id/daily",
   isLoggedIn,
   catchAsync(async (req, res) => {
-    if (!req.user || req.user.role !== "patient") {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
-
     // Get the date from the query parameter (e.g., ?date=2025-12-12)
     const { date } = req.query;
     if (!date) {
