@@ -47,13 +47,6 @@ router.post("/register", async (req, res) => {
     let registeredRole;
 
     if (role === "patient") {
-      // for patient use deviceId
-      const newDevice = new Device({
-        hardwareId: deviceId,
-      });
-      await newDevice.save();
-      deviceIdToLink = newDevice._id;
-      userDetails.devices = [deviceIdToLink];
       RegisterModel = Patient;
       registeredRole = "patient";
     } else if (role === "physician") {
@@ -65,7 +58,24 @@ router.post("/register", async (req, res) => {
     userDetails.role = registeredRole;
     const user = new RegisterModel(userDetails);
     const registered_user = await RegisterModel.register(user, password);
-    // const registered_patient = await RegisterModel.register(user, password);
+
+    // If patient, create & link device after user exists so we can set owner
+    if (registeredRole === "patient") {
+      if (!deviceId) {
+        req.flash("error", "Device ID is required for patient registration.");
+        return res.redirect("/login");
+      }
+
+      const newDevice = new Device({
+        hardwareId: deviceId,
+        owner: registered_user._id,
+      });
+      await newDevice.save();
+
+      registered_user.devices.push(newDevice._id);
+      await registered_user.save();
+    }
+
     req.login(registered_user, (err) => {
       if (err) return next(err);
       req.flash("success", "Welcome to Core-Beat!");

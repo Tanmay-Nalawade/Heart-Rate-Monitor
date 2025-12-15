@@ -1,7 +1,3 @@
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
-}
-
 const express = require("express");
 const path = require("path");
 const session = require("express-session");
@@ -12,6 +8,7 @@ const ejsMate = require("ejs-mate");
 const methodOverried = require("method-override");
 const flash = require("connect-flash");
 const cors = require("cors");
+
 
 const app = express();
 const API_KEY = process.env.HEARTTRACK_API_KEY || "YOUR_SECRET_KEY";
@@ -85,48 +82,24 @@ passport.use(
   )
 );
 
-// // How to store user in the session
-passport.serializeUser(function (user, done) {
-  let userType;
-
-  // Check the model instance to determine the type
-  if (user instanceof Patient) {
-    userType = "Patient";
-  } else if (user instanceof Physician) {
-    userType = "Physician";
-  }
-
-  // Store the user ID AND the type in the session (e.g., { id: '...', type: 'Physician' })
-  done(null, { id: user.id, type: userType });
+// How to store user in the session (handle both Patient and Physician)
+passport.serializeUser((user, done) => {
+  const userType = user.constructor.modelName;
+  done(null, { id: user._id, type: userType });
 });
 
-// How to retrieve user from the session
-passport.deserializeUser(async function (serializedUser, done) {
-  if (!serializedUser || !serializedUser.id || !serializedUser.type) {
-    return done(null, false);
-  }
-
-  const { id, type } = serializedUser;
-  let Model;
-
-  // Select the correct Mongoose model based on the stored type
-  if (type === "Patient") {
-    Model = Patient;
-  } else if (type === "Physician") {
-    Model = Physician;
-  } else {
-    // Should not happen if serialization is correct
-    console.error("Unknown user type detected in session:", type);
-    return done(null, false);
-  }
-
+// How to get user out of the session (handle both Patient and Physician)
+passport.deserializeUser(async (data, done) => {
   try {
-    // Find the user using the correct model
-    const user = await Model.findById(id);
-    // This correctly retrieved user is attached to req.user
+    let user;
+    if (data.type === "Physician") {
+      user = await Physician.findById(data.id);
+    } else {
+      user = await Patient.findById(data.id);
+    }
     done(null, user);
-  } catch (e) {
-    done(e);
+  } catch (err) {
+    done(err);
   }
 });
 
@@ -149,6 +122,7 @@ app.get("/", (req, res) => {
   res.render("home", {
     page_css: "home.css", // Pass the name of the stylesheet file
     page_script: "home.js",
+    title: "Core-Beat Home",
   });
 });
 
@@ -156,17 +130,12 @@ app.get("/about", (req, res) => {
   res.render("about", {
     page_css: "about.css", // Pass the name of the stylesheet file
     page_script: null,
+    title: "About Us",
   });
 });
 
 app.post("/reading", async (req, res) => {
-  const {
-    apiKey,
-    deviceId,
-    heartRate: hrRaw,
-    spo2: spo2Raw,
-    timestamp,
-  } = req.body;
+    const { apiKey, deviceId, heartRate: hrRaw, spo2: spo2Raw, timestamp } = req.body;
 
   const isValidApiKey = apiKey === API_KEY;
 
@@ -186,10 +155,7 @@ app.post("/reading", async (req, res) => {
 
   // ---- Handle your sentinel / bad readings ----
   if (Number.isNaN(heartRate) || heartRate < 0 || heartRate === -999) {
-    console.log(
-      "Ignoring reading because heartRate is invalid/sentinel:",
-      hrRaw
-    );
+    console.log("Ignoring reading because heartRate is invalid/sentinel:", hrRaw);
     return res.status(200).json({
       message: "Invalid heart rate (sentinel or missing), reading ignored",
       received: req.body,
@@ -197,10 +163,7 @@ app.post("/reading", async (req, res) => {
   }
 
   if (Number.isNaN(spo2) || spo2 < 0 || spo2 === -999) {
-    console.log(
-      "SpO2 is invalid/sentinel, will be stored as undefined:",
-      spo2Raw
-    );
+    console.log("SpO2 is invalid/sentinel, will be stored as undefined:", spo2Raw);
     spo2 = undefined; // spo2 is optional in the schema
   }
 
@@ -223,9 +186,7 @@ app.post("/reading", async (req, res) => {
 
   try {
     // NEW: find the Device by hardwareId
-    const device = await Device.findOne({ hardwareId: deviceId }).populate(
-      "owner"
-    );
+    const device = await Device.findOne({ hardwareId: deviceId }).populate("owner");
     if (!device) {
       console.error("Unknown device:", deviceId);
       return res.status(404).json({
@@ -280,12 +241,12 @@ app.all(/(.*)/, (req, res, next) => {
 app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
   if (!err.message) err.message = "Oh No, Something Went Wrong!";
-
+  
   // Ensure currentUser is available for error page navbar
   if (!res.locals.currentUser) {
     res.locals.currentUser = req.user || null;
   }
-
+  
   res.status(statusCode).render("error", {
     err,
     page_css: "error.css", // Pass the name of the stylesheet file
