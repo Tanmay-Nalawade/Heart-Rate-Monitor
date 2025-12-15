@@ -63,7 +63,9 @@
                     <strong>Location:</strong> <%= physician.location %>
                   </p>
                   <p class="card-text"><%= physician.description %></p>
-                  <a href="/patient/choose-physician/<%= physician._id %>" class="btn btn-sm btn-primary mt-auto">Choose Physician</a>
+                  <form method="POST" action="/patient/choose-physician/<%= physician._id %>" style="margin-top: auto;">
+                    <button type="submit" class="btn btn-sm btn-primary w-100">Choose Physician</button>
+                  </form>
                 </div>
               </div>
             </div>
