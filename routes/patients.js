@@ -12,12 +12,59 @@ const {
   validateDevice,
   isPatient,
   isAssignedPhysician,
-  canViewDeviceData,
 } = require("../middleware");
 
 router.use(isLoggedIn);
 
 // Show all the devices
+
+// Ensure you have imported Patient, Device, and catchAsync
+// const Patient = require('./models/patient');
+// const Device = require('./models/device');
+// const catchAsync = require('./utils/catchAsync');
+
+router.get(
+  "/devices/:id", // <-- This catches the Patient ID from the URL
+  catchAsync(async (req, res) => {
+    const patientId = req.params.id; // The ID is the Patient ID
+
+    // 1. Find the Target Patient
+    // We fetch the patient's name and device IDs
+    const patient = await Patient.findById(patientId).select("name devices");
+
+    if (!patient) {
+      // If the ID is invalid or the patient doesn't exist
+      req.flash("error", "Patient not found.");
+      return res.redirect(
+        req.user.role === "physician" ? "/physician/dashboard" : "/"
+      );
+    }
+
+    const deviceIds = patient.devices;
+
+    if (deviceIds.length === 0) {
+      req.flash(
+        "warning",
+        `${patient.name} has no monitoring devices linked yet.`
+      );
+      return res.redirect(
+        req.user.role === "physician" ? "/physician/dashboard" : "/"
+      );
+    }
+
+    // 2. Fetch the full details for all linked devices
+    const devices = await Device.find({ _id: { $in: deviceIds } });
+
+    // 3. Render the view
+    res.render("patient/show_device", {
+      patient: {
+        _id: patient._id,
+        name: patient.name,
+      },
+      devices: devices,
+    });
+  })
+);
 router
   .route("/dashboard")
   .get(
@@ -226,7 +273,6 @@ router.delete(
 router.get(
   "/readings/:id",
   isLoggedIn,
-  canViewDeviceData,
   catchAsync(async (req, res) => {
     const deviceId = req.params.id;
     const dateRange = await Reading.aggregate([
@@ -307,7 +353,6 @@ function getDateRange(dateString) {
 router.get(
   "/readings/:id/daily",
   isLoggedIn,
-  canViewDeviceData,
   catchAsync(async (req, res) => {
     if (!req.user || req.user.role !== "patient") {
       return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -355,7 +400,6 @@ router.get(
 router.get(
   "/readings/:id/summary",
   isLoggedIn,
-  canViewDeviceData,
   catchAsync(async (req, res) => {
     if (!req.user || req.user.role !== "patient") {
       return res.status(401).json({ success: false, message: "Unauthorized" });

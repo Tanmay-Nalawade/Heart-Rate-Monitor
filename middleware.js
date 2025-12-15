@@ -97,17 +97,21 @@ module.exports.isPhysician = (req, res, next) => {
 };
 
 // To validate if either device owner or the assignedPhysician
-module.exports.canViewDeviceData = async (req, res, next) => {
-  const { id } = req.params; // Assumes URL is like /devices/:id
+// Ensure you have imported the Patient model and are using the correct paths
+// const Patient = require('./path/to/models/patient');
 
-  // 1. Find the Patient who owns this device
-  // Since Device doesn't have an owner field, we look for the Patient
-  // whose 'devices' array contains this Device ID.
-  const patientOwner = await Patient.findOne({ devices: id });
+module.exports.canViewDataByPatient = async (req, res, next) => {
+  const patientId = req.params.id; // The ID is the Patient ID
 
-  if (!patientOwner) {
-    req.flash("error", "Device is not linked to any patient.");
-    // Redirect based on role to avoid dead ends
+  // 1. Find the Target Patient
+  // Select fields needed for security check (assignedPhysicians) and for the next step (devices)
+  const patient = await Patient.findById(patientId).select(
+    "devices assignedPhysicians name"
+  );
+
+  if (!patient) {
+    req.flash("error", "Patient not found.");
+    // Redirect logic remains correct
     const redirectUrl =
       req.user.role === "physician"
         ? "/physician/dashboard"
@@ -115,32 +119,34 @@ module.exports.canViewDeviceData = async (req, res, next) => {
     return res.redirect(redirectUrl);
   }
 
-  // 2. CHECK: Is the current user the Patient who owns the device?
-  if (req.user.role === "patient" && patientOwner._id.equals(req.user._id)) {
-    return next();
-  }
+  // 2. CHECK 1: Is the current user the Patient themselves?
+  const isPatientOwner =
+    req.user.role === "patient" && patient._id.equals(req.user._id);
 
-  // 3. CHECK: Is the current user a Physician assigned to this Patient?
-  if (req.user.role === "physician") {
-    const isAssigned = patientOwner.assignedPhysicians.some((physicianId) =>
+  // 3. CHECK 2: Is the current user an Assigned Physician?
+  const isAssignedPhysician =
+    req.user.role === "physician" &&
+    patient.assignedPhysicians.some((physicianId) =>
       physicianId.equals(req.user._id)
     );
 
-    if (isAssigned) {
-      return next();
-    }
+  if (isPatientOwner || isAssignedPhysician) {
+    // 🎉 SUCCESS: Attach the patient object to the request object
+    // This allows the controller to use the patient's data immediately.
+    req.targetPatient = patient;
+    return next();
   }
 
   // 4. Deny Access
   req.flash(
     "error",
-    "You do not have permission to view data for this device."
+    "You do not have permission to view this patient's device list."
   );
-  return res.redirect(
+  const redirectUrl =
     req.user.role === "physician"
       ? "/physician/dashboard"
-      : "/patient/dashboard"
-  );
+      : "/patient/dashboard";
+  return res.redirect(redirectUrl);
 };
 
 // Middleware to validate the physician profile completion data
