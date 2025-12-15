@@ -1,4 +1,6 @@
 require("dotenv").config();
+require("dotenv").config();
+
 const express = require("express");
 const path = require("path");
 const session = require("express-session");
@@ -12,7 +14,7 @@ const cors = require("cors");
 
 
 const app = express();
-const API_KEY = process.env.HEARTTRACK_API_KEY || "YOUR_SECRET_KEY";
+const API_KEY = process.env.API_KEY || "YOUR_SECRET_KEY";
 
 // Routes
 const userRoutes = require("./routes/users");
