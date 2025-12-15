@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("./s3Config");
+// const upload = require("./s3Config");
 const Patient = require("../models/patient");
 const catchAsync = require("../utils/catchAsync");
 const {
@@ -26,44 +26,44 @@ router.get(
   })
 );
 
-router
-  .route("/complete-profile")
-  .get(isLoggedIn, isPhysician, (req, res) => {
-    // Render the form. Pass the current user data so fields can be pre-filled (like name).
-    res.render("physician/completeProfile", {
-      currentUser: req.user,
-    });
-  })
+// router
+//   .route("/complete-profile")
+//   .get(isLoggedIn, isPhysician, (req, res) => {
+//     // Render the form. Pass the current user data so fields can be pre-filled (like name).
+//     res.render("physician/completeProfile", {
+//       currentUser: req.user,
+//     });
+//   })
 
-  // You MUST have this route handler defined in your Express router:
-  .post(
-    isLoggedIn,
-    isPhysician,
-    upload.single("image"),
-    validatePhysicianProfile,
-    catchAsync(async (req, res) => {
-      const physicianId = req.user._id;
-      const { description, location, image, name } = req.body;
+//   // You MUST have this route handler defined in your Express router:
+//   .post(
+//     isLoggedIn,
+//     isPhysician,
+//     upload.single("image"),
+//     validatePhysicianProfile,
+//     catchAsync(async (req, res) => {
+//       const physicianId = req.user._id;
+//       const { description, location, image, name } = req.body;
 
-      let imageUrl;
-      if (req.file) {
-        // aws-s3-multer adds the 'location' property which is the PUBLIC URL
-        imageUrl = req.file.location;
-      }
+//       let imageUrl;
+//       if (req.file) {
+//         // aws-s3-multer adds the 'location' property which is the PUBLIC URL
+//         imageUrl = req.file.location;
+//       }
 
-      await Physician.findByIdAndUpdate(physicianId, {
-        $set: {
-          description,
-          location,
-          name,
-          ...(imageUrl && { image: imageUrl }),
-        },
-      });
+//       await Physician.findByIdAndUpdate(physicianId, {
+//         $set: {
+//           description,
+//           location,
+//           name,
+//           ...(imageUrl && { image: imageUrl }),
+//         },
+//       });
 
-      req.flash("success", "Your Profile is complete!");
-      res.redirect("/physician/dashboard");
-    })
-  );
+//       req.flash("success", "Your Profile is complete!");
+//       res.redirect("/physician/dashboard");
+//     })
+//   );
 
 // Make sure you have the required models imported:
 // const Patient = require('./models/patient');
