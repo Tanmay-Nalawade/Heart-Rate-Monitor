@@ -65,19 +65,68 @@ router
     })
   );
 
+// Make sure you have the required models imported:
+// const Patient = require('./models/patient');
+// const Reading = require('./models/reading');
+
 router.get(
   "/dashboard",
   isLoggedIn,
   isPhysician,
   catchAsync(async (req, res) => {
-    const patientIds = req.user.patients;
-    const patients = await Patient.find({ _id: { $in: patientIds } });
-    res.render("physician/dashboard", {
-      patients,
-      page_css: null,
-      page_script: null,
-      title: "Dashboard",
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); // Calculate the start time
+
+    // 1. Fetch all patients assigned to this physician
+    // We need the devices array for the next step
+    const patients = await Patient.find({
+      assignedPhysicians: req.user._id,
+    }).select("name devices");
+
+    // 2. Create an array of Promises for stat calculations
+    const statPromises = patients.map(async (patient) => {
+      const deviceIds = patient.devices;
+
+      if (deviceIds.length === 0) {
+        // Return null stats if no devices are linked
+        return null;
+      }
+
+      const summaryStats = await Reading.aggregate([
+        // Stage 1: Filter by patient devices and time window
+        {
+          $match: {
+            device: { $in: deviceIds },
+            readingTime: { $gte: sevenDaysAgo },
+          },
+        },
+        // Stage 2: Group and calculate required stats (HR only, based on EJS)
+        {
+          $group: {
+            _id: null,
+            average: { $avg: "$heartRate" },
+            minimum: { $min: "$heartRate" },
+            maximum: { $max: "$heartRate" },
+          },
+        },
+      ]);
+
+      // Return the stats object (or null if the array is empty)
+      return summaryStats[0] || null;
     });
+
+    // 3. Wait for all promises to resolve
+    const patientStats = await Promise.all(statPromises);
+
+    // 4. Merge the stats back into the patient objects
+    const patientsWithStats = patients.map((patient, index) => {
+      // Attach the calculated stats to the patient object
+      patient.stats = patientStats[index];
+      return patient;
+    });
+
+    // 5. Render the view with the enhanced patients array
+    res.render("physician/dashboard", { patients: patientsWithStats });
   })
 );
 
