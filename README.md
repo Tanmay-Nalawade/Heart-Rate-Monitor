@@ -36,7 +36,7 @@ HeartTrack is an IoT-enabled monitoring system built around a **Particle Photon 
 3. Open the dashboard and view device readings charts (HR + SpO2).
 4. Browse physicians, assign/remove a physician, and view physician dashboard.
 
-## Steps (Particle / Firmware)
+## Steps (Particle)
 1. Wire the MAX30105 to the Photon 2 (I2C + power + ground).
 2. Open the Particle firmware project in VS Code (Particle Workbench).
 3. Compile and flash the firmware to the Photon 2.
