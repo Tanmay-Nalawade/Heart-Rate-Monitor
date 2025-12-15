@@ -15,7 +15,7 @@ const {
   canViewDeviceData,
 } = require("../middleware");
 
-router.use(isLoggedIn, isPatient);
+router.use(isLoggedIn);
 
 // Show all the devices
 router
@@ -28,8 +28,6 @@ router
       });
       res.render("patient/dashboard", {
         patient_devices,
-        page_css: null,
-        page_script: null,
       });
     })
   )
@@ -90,8 +88,6 @@ router.get("/device/new", async (req, res) => {
   const device = await Device.findById(req.params.id);
   res.render("patient/new_device", {
     device,
-    page_css: null,
-    page_script: null,
   });
 });
 
