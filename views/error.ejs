@@ -10,6 +10,8 @@
       <!-- Ícone de rosto com X nos olhos -->
     </div>
     <h1><%=err.message%></h1>
+    <% if (process.env.NODE_ENV !== "production") { %>
     <p><%= err.stack %></p>
+    <%}%>
   </div>
 </div>

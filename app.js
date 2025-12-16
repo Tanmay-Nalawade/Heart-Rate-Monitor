@@ -153,10 +153,10 @@ app.get("/", (req, res) => {
 });
 
 app.get("/about", (req, res) => {
-  res.render("about", {
-    page_css: "about.css", // Pass the name of the stylesheet file
-    page_script: null,
-  });
+  res.render("about");
+});
+app.get("/references", (req, res) => {
+  res.render("references");
 });
 
 app.post("/reading", async (req, res) => {
