@@ -31,7 +31,7 @@
                 <strong>Location:</strong> <%= physician.location %>
               </p>
               <p class="card-text"><%= physician.description %></p>
-              <form method="POST" action="/patient/remove-physician/<%= physician._id %>" style="margin-top: auto;">
+              <form method="POST" action="/patient/remove-physician/<%= physician._id %>?_method=DELETE" style="margin-top: auto;">
                 <button type="submit" class="btn btn-sm btn-danger">Remove Physician</button>
               </form>
             </div>
