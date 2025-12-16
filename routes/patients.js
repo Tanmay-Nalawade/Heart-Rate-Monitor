@@ -92,6 +92,7 @@ router
 
       res.render("patient/dashboard", {
         patient_devices,
+        currentUser: currentUser,
         assignedPhysicians: currentUser.assignedPhysicians,
         availablePhysicians,
       });
