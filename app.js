@@ -11,7 +11,6 @@ const methodOverried = require("method-override");
 const flash = require("connect-flash");
 const cors = require("cors");
 
-
 const app = express();
 const API_KEY = process.env.API_KEY || "YOUR_SECRET_KEY";
 
@@ -129,15 +128,20 @@ app.get("/", (req, res) => {
 });
 
 app.get("/about", (req, res) => {
-  res.render("about", {
-    page_css: "about.css", // Pass the name of the stylesheet file
-    page_script: null,
-    title: "About Us",
-  });
+  res.render("about");
+});
+app.get("/references", (req, res) => {
+  res.render("references");
 });
 
 app.post("/reading", async (req, res) => {
-    const { apiKey, deviceId, heartRate: hrRaw, spo2: spo2Raw, timestamp } = req.body;
+  const {
+    apiKey,
+    deviceId,
+    heartRate: hrRaw,
+    spo2: spo2Raw,
+    timestamp,
+  } = req.body;
 
   const isValidApiKey = apiKey === API_KEY;
 
@@ -157,7 +161,10 @@ app.post("/reading", async (req, res) => {
 
   // ---- Handle your sentinel / bad readings ----
   if (Number.isNaN(heartRate) || heartRate < 0 || heartRate === -999) {
-    console.log("Ignoring reading because heartRate is invalid/sentinel:", hrRaw);
+    console.log(
+      "Ignoring reading because heartRate is invalid/sentinel:",
+      hrRaw
+    );
     return res.status(200).json({
       message: "Invalid heart rate (sentinel or missing), reading ignored",
       received: req.body,
@@ -165,7 +172,10 @@ app.post("/reading", async (req, res) => {
   }
 
   if (Number.isNaN(spo2) || spo2 < 0 || spo2 === -999) {
-    console.log("SpO2 is invalid/sentinel, will be stored as undefined:", spo2Raw);
+    console.log(
+      "SpO2 is invalid/sentinel, will be stored as undefined:",
+      spo2Raw
+    );
     spo2 = undefined; // spo2 is optional in the schema
   }
 
@@ -188,7 +198,9 @@ app.post("/reading", async (req, res) => {
 
   try {
     // NEW: find the Device by hardwareId
-    const device = await Device.findOne({ hardwareId: deviceId }).populate("owner");
+    const device = await Device.findOne({ hardwareId: deviceId }).populate(
+      "owner"
+    );
     if (!device) {
       console.error("Unknown device:", deviceId);
       return res.status(404).json({
@@ -243,12 +255,12 @@ app.all(/(.*)/, (req, res, next) => {
 app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
   if (!err.message) err.message = "Oh No, Something Went Wrong!";
-  
+
   // Ensure currentUser is available for error page navbar
   if (!res.locals.currentUser) {
     res.locals.currentUser = req.user || null;
   }
-  
+
   res.status(statusCode).render("error", {
     err,
     page_css: "error.css", // Pass the name of the stylesheet file
